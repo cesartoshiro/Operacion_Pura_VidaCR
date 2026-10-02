@@ -1,0 +1,1623 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Operación Pura Vida</title>
+<meta name="author" content="César Jiménez Segura">
+<style>
+/* ============================================================
+   OPERACIÓN PURA VIDA · juego educativo de ciberseguridad
+   Autor: César Jiménez Segura · 2026
+   Layout: "TicOS" — HUD retro tropical. Barra fija · mapa de
+   misiones (acceso libre) · panel de misión con LECCIÓN primero
+   y luego los retos. Certificado solo al completar todo.
+   ============================================================ */
+:root{
+  --bg:#0c1622; --bg2:#0f1d2e; --panel:#13273c; --panel2:#17304a; --line:#24415f;
+  --fg:#e9f1f8; --muted:#9fb4c9; --faint:#6d87a1;
+  --accent:#2fd6b4; --accent-d:#179f85; --coral:#ff6a5a; --gold:#f4bd4f; --purple:#9d8cff; --sky:#56b4e9;
+  --good:#43c478; --warn:#f4a93a; --crit:#ff5d6c;
+  --shadow:0 18px 40px -22px rgba(0,0,0,.7); --r:14px; --r-s:9px; --maxw:1080px;
+  --f-display:"Chakra Petch","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace;
+  --f-pixel:"Silkscreen","Chakra Petch",monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#eef3f2; --bg2:#e6edeb; --panel:#fff; --panel2:#f4f8f7; --line:#d3ddda;
+  --fg:#15242f; --muted:#51697a; --faint:#8197a6;
+  --accent:#0f9c82; --accent-d:#0b7a66; --coral:#e23d2c; --gold:#b9810c; --purple:#6a55e0; --sky:#2b84c4;
+  --good:#1f9d57; --warn:#c77e12; --crit:#d9394a; --shadow:0 18px 40px -26px rgba(20,50,60,.35); color-scheme:light;
+}}
+:root[data-theme="light"]{
+  --bg:#eef3f2; --bg2:#e6edeb; --panel:#fff; --panel2:#f4f8f7; --line:#d3ddda;
+  --fg:#15242f; --muted:#51697a; --faint:#8197a6;
+  --accent:#0f9c82; --accent-d:#0b7a66; --coral:#e23d2c; --gold:#b9810c; --purple:#6a55e0; --sky:#2b84c4;
+  --good:#1f9d57; --warn:#c77e12; --crit:#d9394a; --shadow:0 18px 40px -26px rgba(20,50,60,.35); color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--f-body);background:var(--bg);color:var(--fg);line-height:1.55;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(1200px 600px at 80% -10%,rgba(47,214,180,.1),transparent 60%),radial-gradient(900px 500px at -5% 10%,rgba(157,140,255,.08),transparent 55%);
+  background-attachment:fixed;}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+p{margin:0 0 .7em}
+a{color:var(--accent)}
+button{font-family:inherit}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:6px}
+::selection{background:var(--accent);color:#04231c}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding-inline:16px}
+.pixel{font-family:var(--f-pixel);letter-spacing:.5px;text-transform:uppercase}
+.mono{font-family:var(--f-mono)}
+.tabnum{font-variant-numeric:tabular-nums}
+.tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:.72rem;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--panel2)}
+.tag.good{color:var(--good);border-color:color-mix(in srgb,var(--good) 45%,transparent)}
+.tag.gold{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)}
+
+.btn{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--fg);font-weight:600;font-size:.92rem;padding:10px 16px;border-radius:var(--r-s);transition:transform .08s,background .15s,border-color .15s;display:inline-flex;gap:8px;align-items:center}
+.btn:hover{border-color:var(--accent);background:var(--panel)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent-d));color:#042a22;border-color:transparent;font-weight:700}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:6px 11px;font-size:.82rem}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topin{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;gap:12px;padding:9px 16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0;background:none;border:none;cursor:pointer;padding:0;color:inherit}
+.logo{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex:none;background:linear-gradient(145deg,var(--accent),var(--purple));color:#04231c;font-family:var(--f-pixel);font-size:.9rem;box-shadow:var(--shadow)}
+.brand b{font-family:var(--f-display);font-size:1.02rem;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand small{display:block;color:var(--faint);font-size:.66rem;font-family:var(--f-mono);margin-top:-2px}
+.hud{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.hud .chip{display:inline-flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:.8rem;font-weight:600}
+.hud .chip .k{font-family:var(--f-pixel);font-size:.62rem;color:var(--faint)}
+.icbtn{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer;display:grid;place-items:center;font-size:1.05rem}
+.icbtn:hover{border-color:var(--accent)}
+
+.screen{display:none;animation:fade .35s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+main{padding-block:22px 60px}
+
+.hero{text-align:center;padding-block:26px 8px}
+.hero .kicker{font-family:var(--f-pixel);color:var(--accent);font-size:.72rem;letter-spacing:1px}
+.hero h1{font-size:clamp(2.1rem,7vw,3.9rem);margin:.25em 0 .1em;background:linear-gradient(100deg,var(--fg),var(--accent) 60%,var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .lede{color:var(--muted);max-width:60ch;margin:0 auto 1.3em;font-size:1.05rem}
+.flagstripe{height:7px;border-radius:3px;max-width:380px;margin:0 auto 26px;background:linear-gradient(90deg,#1560bd 0 20%,#fff 20% 35%,var(--coral) 35% 65%,#fff 65% 80%,#1560bd 80%)}
+.setupcard{max-width:520px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);text-align:left}
+.setupcard label{font-family:var(--f-pixel);font-size:.66rem;color:var(--faint);display:block;margin-bottom:7px}
+.input{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--fg);border-radius:var(--r-s);padding:12px 14px;font-size:1rem;font-family:var(--f-mono)}
+.input:focus{border-color:var(--accent);outline:none}
+.hint{color:var(--faint);font-size:.82rem;margin-top:8px}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:34px}
+.feat .f{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.feat .f .ic{font-size:1.5rem}
+.feat .f h4{font-size:.98rem;margin:8px 0 4px}
+.feat .f p{color:var(--muted);font-size:.85rem;margin:0}
+
+.maphead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.maphead h2{font-size:1.5rem}
+.maphead p{color:var(--muted);margin:.2em 0 0;max-width:52ch;font-size:.92rem}
+.progwrap{min-width:220px;flex:1;max-width:360px}
+.progbar{height:11px;background:var(--bg2);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.progbar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));width:0;transition:width .5s ease}
+.progmeta{display:flex;justify-content:space-between;font-size:.74rem;color:var(--faint);margin-top:5px;font-family:var(--f-mono)}
+.certbtn{margin-top:10px;width:100%;justify-content:center}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.mcard{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:9px;cursor:pointer;overflow:hidden;transition:transform .1s,border-color .15s,box-shadow .2s;text-align:left;color:inherit;font:inherit}
+.mcard:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:var(--shadow)}
+.mcard::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--region,var(--accent))}
+.mcard .row{display:flex;align-items:center;gap:10px}
+.mcard .num{font-family:var(--f-pixel);font-size:.7rem;color:#04231c;background:var(--region,var(--accent));padding:4px 8px;border-radius:6px;flex:none}
+.mcard .ic{font-size:1.5rem;margin-left:auto}
+.mcard h3{font-size:1.06rem;line-height:1.2}
+.mcard .loc{font-family:var(--f-mono);font-size:.72rem;color:var(--faint)}
+.mcard p{color:var(--muted);font-size:.85rem;margin:0;flex:1}
+.mcard .foot{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-top:4px}
+.mcard.done{border-color:color-mix(in srgb,var(--good) 55%,var(--line))}
+.stamp{position:absolute;top:10px;right:12px;font-family:var(--f-pixel);font-size:.62rem;color:var(--good);border:1.5px solid var(--good);border-radius:6px;padding:2px 6px;transform:rotate(7deg)}
+
+.mission{max-width:860px;margin:0 auto}
+.mback{display:inline-flex;align-items:center;gap:7px;color:var(--muted);background:none;border:none;cursor:pointer;font-size:.9rem;padding:4px 0;margin-bottom:10px}
+.mback:hover{color:var(--accent)}
+.mtitle{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+.mtitle .badge-ic{width:52px;height:52px;border-radius:12px;display:grid;place-items:center;font-size:1.7rem;flex:none;background:var(--region,var(--panel2));border:1px solid var(--line)}
+.mtitle h2{font-size:1.5rem}
+.mtitle .loc{font-family:var(--f-mono);font-size:.76rem;color:var(--faint)}
+.objective{background:var(--panel2);border:1px dashed var(--line);border-radius:var(--r-s);padding:11px 14px;margin:14px 0;font-size:.9rem}
+.objective b{font-family:var(--f-pixel);font-size:.64rem;color:var(--accent);display:block;margin-bottom:3px}
+.steps-nav{display:flex;gap:5px;margin:14px 0 18px;flex-wrap:wrap}
+.sdot{height:6px;flex:1;min-width:14px;border-radius:999px;background:var(--line)}
+.sdot.done{background:var(--good)} .sdot.cur{background:var(--accent)}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.panel h3{font-size:1.15rem;margin-bottom:.5em}
+.steplabel{font-family:var(--f-pixel);font-size:.62rem;color:var(--faint);letter-spacing:1px;margin-bottom:10px}
+
+/* ---- novela visual ---- */
+.vn{display:flex;flex-direction:column;gap:12px}
+.dlg{display:flex;gap:12px;align-items:flex-start;animation:fade .3s ease}
+.avatar{width:46px;height:46px;border-radius:12px;flex:none;display:grid;place-items:center;font-size:1.5rem;background:var(--panel2);border:1px solid var(--line)}
+.bubble{background:var(--panel2);border:1px solid var(--line);border-radius:12px;border-top-left-radius:3px;padding:10px 14px;flex:1;min-width:0}
+.bubble .who{font-family:var(--f-display);font-weight:700;font-size:.82rem;color:var(--accent);margin-bottom:2px}
+.bubble .who .role{color:var(--faint);font-weight:400;font-family:var(--f-mono);font-size:.7rem;margin-left:6px}
+.bubble p{margin:0}
+.dlg.me .bubble{border-top-left-radius:12px;border-top-right-radius:3px;background:color-mix(in srgb,var(--accent) 12%,var(--panel2))}
+.dlg.narr .bubble{background:transparent;border-style:dashed;font-style:italic;color:var(--muted)}
+.dlg.narr .avatar{background:transparent;border-style:dashed}
+
+/* ---- LECCIÓN ---- */
+.lead{font-size:1.02rem;color:var(--fg);margin-bottom:14px}
+.lead b{color:var(--accent)}
+.teachin{display:flex;gap:11px;align-items:flex-start;background:color-mix(in srgb,var(--sky) 10%,var(--panel2));border:1px solid color-mix(in srgb,var(--sky) 35%,transparent);border-radius:var(--r-s);padding:12px 14px;margin-bottom:16px}
+.teachin .av{width:40px;height:40px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:1.35rem;background:var(--panel);border:1px solid var(--line)}
+.teachin .tx{font-size:.92rem}
+.teachin .tx b{font-family:var(--f-display);color:var(--sky)}
+.concepts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-bottom:16px}
+.concept{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r-s);padding:14px;border-top:3px solid var(--region,var(--accent))}
+.concept .ch{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.concept .ch .ci{font-size:1.4rem}
+.concept .ch h4{font-size:1rem}
+.concept .cd{font-size:.86rem;color:var(--muted);margin-bottom:8px}
+.concept .ex{font-size:.8rem;background:var(--bg2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;color:var(--fg)}
+.concept .ex .xl{font-family:var(--f-pixel);font-size:.5rem;color:var(--faint);display:block;margin-bottom:2px}
+.concept .tico{font-size:.8rem;color:var(--accent);margin-top:7px;font-style:italic}
+.acrobox{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-s);padding:13px 15px;margin-bottom:16px}
+.acrobox h4{font-size:.82rem;font-family:var(--f-pixel);color:var(--gold);letter-spacing:.5px;margin-bottom:9px}
+.acrolist{display:flex;flex-direction:column;gap:7px}
+.acro{font-size:.85rem}
+.acro b{font-family:var(--f-mono);color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:5px;padding:1px 6px;margin-right:6px}
+.keypts{background:color-mix(in srgb,var(--good) 9%,var(--panel2));border:1px solid color-mix(in srgb,var(--good) 35%,transparent);border-radius:var(--r-s);padding:13px 15px 13px 15px;margin-bottom:8px}
+.keypts h4{font-size:.78rem;font-family:var(--f-pixel);color:var(--good);margin-bottom:8px}
+.keypts ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+.keypts li{font-size:.9rem}
+
+/* ---- retos ---- */
+.prompt{font-size:1.02rem;margin-bottom:14px}
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{display:flex;gap:11px;align-items:flex-start;text-align:left;width:100%;cursor:pointer;background:var(--panel2);border:1px solid var(--line);border-radius:var(--r-s);padding:12px 14px;color:inherit;font:inherit;font-size:.93rem;transition:border-color .12s,background .12s}
+.opt:hover{border-color:var(--accent)}
+.opt .mk{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line);flex:none;display:grid;place-items:center;font-size:.8rem;font-weight:700}
+.opt.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel2))}
+.opt.sel .mk{background:var(--accent);color:#042a22;border-color:transparent}
+.opt.correct{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--panel2))}
+.opt.correct .mk{background:var(--good);color:#042a1a;border-color:transparent}
+.opt.wrong{border-color:var(--crit);background:color-mix(in srgb,var(--crit) 12%,var(--panel2))}
+.opt.wrong .mk{background:var(--crit);color:#fff;border-color:transparent}
+.opt.disabled{cursor:default;pointer-events:none}
+.feedback{margin-top:14px;border-radius:var(--r-s);padding:12px 14px;font-size:.9rem;display:none;animation:fade .25s ease}
+.feedback.show{display:block}
+.feedback.ok{background:color-mix(in srgb,var(--good) 14%,var(--panel2));border:1px solid color-mix(in srgb,var(--good) 45%,transparent)}
+.feedback.no{background:color-mix(in srgb,var(--crit) 12%,var(--panel2));border:1px solid color-mix(in srgb,var(--crit) 45%,transparent)}
+.feedback b{display:block;margin-bottom:3px;font-family:var(--f-display)}
+.hintbar{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.hintbox{margin-top:10px;background:var(--bg2);border:1px dashed var(--line);border-radius:var(--r-s);padding:10px 13px;font-size:.86rem;color:var(--muted)}
+.hintbox .pix{font-family:var(--f-pixel);font-size:.58rem;color:var(--gold);display:block;margin-bottom:3px}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+
+.pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chipitem{cursor:pointer;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:8px 13px;font-size:.86rem;transition:all .12s}
+.chipitem:hover{border-color:var(--accent)}
+.chipitem.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--panel2))}
+.chipitem.placed{opacity:.35;pointer-events:none;text-decoration:line-through}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.bucket{background:var(--bg2);border:1.5px dashed var(--line);border-radius:var(--r-s);padding:12px;min-height:110px}
+.bucket h4{font-size:.92rem;margin-bottom:4px}
+.bucket .desc{font-size:.74rem;color:var(--faint);margin-bottom:9px}
+.bucket .drop{display:flex;flex-direction:column;gap:6px}
+.bucket.hot{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--bg2))}
+.dropped{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:6px 9px;font-size:.82rem;display:flex;gap:6px;align-items:center}
+.dropped.ok{border-color:var(--good)} .dropped.bad{border-color:var(--crit)}
+
+.orderlist{display:flex;flex-direction:column;gap:8px}
+.oitem{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:var(--r-s);padding:10px 12px;font-size:.9rem}
+.oitem .idx{font-family:var(--f-pixel);font-size:.66rem;color:var(--faint);width:20px;flex:none}
+.oitem .mvs{margin-left:auto;display:flex;gap:4px}
+.oitem.ok{border-color:var(--good)} .oitem.bad{border-color:var(--crit)}
+.mv{width:28px;height:28px;border-radius:6px;border:1px solid var(--line);background:var(--bg2);cursor:pointer;color:var(--fg)}
+.mv:hover{border-color:var(--accent)}
+
+/* ---- CTF ---- */
+.safebanner{display:flex;gap:10px;align-items:flex-start;background:color-mix(in srgb,var(--warn) 12%,var(--panel2));border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);border-radius:var(--r-s);padding:11px 13px;font-size:.84rem;margin-bottom:14px}
+.safebanner .ic{font-size:1.1rem}
+.win{background:var(--bg2);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
+.winbar{display:flex;align-items:center;gap:8px;background:var(--panel2);border-bottom:1px solid var(--line);padding:8px 11px;font-size:.8rem}
+.winbar .dots{display:flex;gap:5px}
+.winbar .dots i{width:11px;height:11px;border-radius:50%;background:var(--line)}
+.winbar .dots i:nth-child(1){background:#ff6058}.winbar .dots i:nth-child(2){background:#ffbd2e}.winbar .dots i:nth-child(3){background:#28c940}
+.winbar .ttl{font-family:var(--f-mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.winbody{padding:14px}
+.mailhead{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.84rem;margin-bottom:10px}
+.mailhead .lbl{color:var(--faint);font-family:var(--f-mono);font-size:.76rem}
+.mailhead .val{font-family:var(--f-mono);word-break:break-all}
+.suspect{cursor:help;border-bottom:2px dotted var(--coral)}
+.mailbody{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;font-size:.9rem;margin-top:8px}
+.mailbody .fakebtn{display:inline-block;background:var(--coral);color:#fff;padding:9px 16px;border-radius:7px;font-weight:700;margin-top:8px;cursor:pointer;text-decoration:none}
+.urlpeek{font-family:var(--f-mono);font-size:.74rem;color:var(--coral);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 7px;display:inline-block;margin-top:6px}
+.headers{font-family:var(--f-mono);font-size:.76rem;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:10px;white-space:pre-wrap;word-break:break-all;line-height:1.7;display:none}
+.headers.show{display:block}
+.headers .hl{background:color-mix(in srgb,var(--gold) 30%,transparent);border-radius:3px;padding:0 2px}
+.addrbar{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-family:var(--f-mono);font-size:.82rem;margin-bottom:12px}
+.addrbar .lock{color:var(--good)} .addrbar .u{word-break:break-all}
+.loginbox{max-width:320px;margin:6px auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;text-align:center}
+.loginbox .blogo{font-family:var(--f-display);font-weight:700;color:var(--accent);font-size:1.15rem;margin-bottom:4px}
+.loginbox .input{margin:7px 0;text-align:left}
+.pill{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-family:var(--f-mono);font-size:.74rem;margin:2px}
+.split{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:640px){.split{grid-template-columns:1fr 1fr}}
+.coyote{background:#120b16;border:1px solid #3a2347;border-radius:10px;overflow:hidden}
+.coyote .winbar{background:#1c1022;border-color:#3a2347}
+.coyote .winbar .ttl{color:#c9a7df}
+.coylog{font-family:var(--f-mono);font-size:.76rem;padding:12px;min-height:150px;color:#e6c8f5}
+.coylog .ln{margin-bottom:4px}
+.coylog .ln .t{color:#7a5a8f}
+.coylog .ln.cap{color:#ff9db0}
+.coylog .ln.ok{color:#8ef0b8}
+.callcard{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:12px}
+.callcard .ring{font-family:var(--f-pixel);font-size:.64rem;color:var(--coral)}
+.srcview{font-family:var(--f-mono);font-size:.76rem;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;white-space:pre-wrap;word-break:break-all;max-height:260px;overflow:auto;line-height:1.6}
+.srcview .cmt{color:var(--faint)}
+.srcview .b64{color:var(--gold);cursor:pointer;text-decoration:underline}
+.decoder{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.decoder .input{flex:1;min-width:160px}
+.phishcard{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.phishcard .meta{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);margin-bottom:8px;word-break:break-all}
+.flagwon{text-align:center;padding:18px;animation:fade .35s ease}
+.flagwon .big{font-family:var(--f-pixel);font-size:1.1rem;color:var(--gold);margin:8px 0}
+.flagcode{font-family:var(--f-mono);background:var(--bg);border:1px dashed var(--gold);border-radius:8px;padding:10px 14px;display:inline-block;color:var(--gold);font-size:.95rem;margin:6px 0}
+
+.complete{text-align:center;padding:10px}
+.complete .burst{font-size:3rem}
+.complete h3{font-size:1.5rem;margin:.3em 0}
+.rewards{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+.reward{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r-s);padding:12px 16px;min-width:100px}
+.reward .n{font-family:var(--f-display);font-size:1.5rem;font-weight:700;color:var(--gold)}
+.reward .l{font-family:var(--f-pixel);font-size:.54rem;color:var(--faint)}
+
+.overlay{position:fixed;inset:0;z-index:60;background:rgba(5,12,20,.72);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:20px;overflow:auto}
+.overlay.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);max-width:640px;width:100%;box-shadow:var(--shadow);margin:auto;animation:fade .25s ease}
+.modal .mhead{display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);border-radius:var(--r) var(--r) 0 0}
+.modal .mhead h3{font-size:1.1rem;margin-right:auto}
+.modal .mbody{padding:18px}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tabs button{flex:1;padding:8px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:var(--r-s);cursor:pointer;font-weight:600;font-size:.85rem}
+.tabs button.on{border-color:var(--accent);color:var(--fg);background:color-mix(in srgb,var(--accent) 10%,var(--panel2))}
+.glossary{display:flex;flex-direction:column;gap:9px}
+.gentry{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r-s);padding:11px 13px}
+.gentry .term{font-family:var(--f-display);font-weight:700;color:var(--accent);display:flex;gap:8px;align-items:center}
+.gentry .term .lk{font-size:.7rem;color:var(--faint);margin-left:auto;font-family:var(--f-mono)}
+.gentry .def{font-size:.86rem;color:var(--muted);margin-top:2px}
+.gentry .def b{color:var(--fg)}
+.badgegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.bchip{text-align:center;background:var(--panel2);border:1px solid var(--line);border-radius:var(--r-s);padding:12px 6px}
+.bchip .ic{font-size:1.8rem;filter:grayscale(1);opacity:.35}
+.bchip.have .ic{filter:none;opacity:1}
+.bchip .nm{font-family:var(--f-pixel);font-size:.52rem;color:var(--faint);margin-top:6px;line-height:1.3}
+.bchip.have .nm{color:var(--fg)}
+.charlist{display:flex;flex-direction:column;gap:10px}
+.charrow{display:flex;gap:12px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:var(--r-s);padding:11px 13px}
+.charrow .av{width:44px;height:44px;border-radius:11px;flex:none;display:grid;place-items:center;font-size:1.5rem;background:var(--panel);border:1px solid var(--line)}
+.charrow .nm{font-family:var(--f-display);font-weight:700}
+.charrow .rl{font-size:.8rem;color:var(--muted)}
+.teacher .warn{background:color-mix(in srgb,var(--warn) 12%,var(--panel2));border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);border-radius:var(--r-s);padding:11px 13px;font-size:.84rem;margin-bottom:14px}
+.ttable{width:100%;border-collapse:collapse;font-size:.82rem}
+.ttable th,.ttable td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+.ttable th{font-family:var(--f-pixel);font-size:.56rem;color:var(--faint)}
+.ttable .fl{font-family:var(--f-mono);color:var(--gold)}
+details.tsec{border:1px solid var(--line);border-radius:var(--r-s);margin-bottom:10px;overflow:hidden}
+details.tsec summary{cursor:pointer;padding:11px 13px;font-family:var(--f-display);font-weight:600;background:var(--panel2)}
+details.tsec .tin{padding:13px}
+
+.cert{background:linear-gradient(145deg,var(--panel2),var(--panel));border:2px solid var(--accent);border-radius:var(--r);padding:26px;text-align:center;position:relative;overflow:hidden}
+.cert::before,.cert::after{content:"";position:absolute;width:120px;height:120px;border:2px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:50%}
+.cert::before{top:-50px;left:-50px}.cert::after{bottom:-50px;right:-50px}
+.cert .seal{font-size:2.4rem}
+.cert .ttl{font-family:var(--f-pixel);font-size:.72rem;color:var(--accent);letter-spacing:1px;margin:8px 0}
+.cert .nm{font-family:var(--f-display);font-size:1.8rem;font-weight:700;margin:6px 0;border-bottom:1px solid var(--line);display:inline-block;padding:0 20px 6px}
+.cert .dt{color:var(--muted);font-size:.84rem;margin-top:8px;font-family:var(--f-mono)}
+.cert .sig{margin-top:18px;font-size:.78rem;color:var(--faint)}
+.locknote{text-align:center;padding:30px 18px;color:var(--muted)}
+.locknote .big{font-size:2.6rem}
+
+.foot{border-top:1px solid var(--line);margin-top:40px;padding:20px 16px;text-align:center;color:var(--faint);font-size:.8rem}
+.foot b{color:var(--muted)}
+.foot .mono{font-size:.72rem}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--accent);border-radius:999px;padding:10px 18px;font-size:.86rem;font-weight:600;box-shadow:var(--shadow);z-index:80;opacity:0;pointer-events:none;transition:all .3s ease;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@media(max-width:520px){.brand small{display:none}.hud .chip .k{display:none}.mtitle .badge-ic{width:44px;height:44px;font-size:1.4rem}}
+</style>
+
+<header class="top">
+  <div class="topin">
+    <button class="brand" id="homeBtn">
+      <span class="logo">CR</span>
+      <span style="text-align:left"><b>Operación Pura Vida</b><small>Ciberseguridad · modo tico</small></span>
+    </button>
+    <div class="hud" id="hud" hidden>
+      <span class="chip" title="Colones de reputación"><span class="k">₡ REP</span><span class="v tabnum" id="hudPoints">0</span></span>
+      <span class="chip" title="Misiones completadas"><span class="k">MISIÓN</span><span class="v tabnum" id="hudProg">0/13</span></span>
+      <button class="icbtn" id="charBtn" title="Personajes">🎭</button>
+      <button class="icbtn" id="badgeBtn" title="Insignias">🎖️</button>
+      <button class="icbtn" id="glosBtn" title="Glosario y siglas">📖</button>
+      <button class="icbtn" id="teachBtn" title="Modo docente">🧑‍🏫</button>
+      <button class="icbtn" id="themeBtn" title="Tema">🌗</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="screen active" id="scr-start">
+    <div class="wrap">
+      <div class="hero">
+        <div class="kicker">◆ Centro de Respuesta Tico · Expediente 2022–2026 ◆</div>
+        <h1>Operación Pura Vida</h1>
+        <div class="flagstripe" aria-hidden="true"></div>
+        <p class="lede">Aprendé ciberseguridad jugando: primero te lo explican con calma, luego lo ponés en práctica. Enfrentá los ataques que de verdad golpearon a Costa Rica y capturá banderas en un laboratorio de phishing 100&nbsp;% simulado. Diay, ¿listo para el brete?</p>
+      </div>
+      <div class="setupcard">
+        <label for="aliasIn">Tu alias de agente (sin datos reales)</label>
+        <input class="input" id="aliasIn" maxlength="22" placeholder="ej. ElPuraVida, MaeHacker, DoñaFirewall" autocomplete="off">
+        <p class="hint">Usá un apodo, no tu nombre real. Así cuidamos tus datos (Ley&nbsp;8968 de Protección de Datos). Tu avance se guarda solo en este dispositivo.</p>
+        <div class="actions" style="justify-content:flex-start;margin-top:16px">
+          <button class="btn primary" id="startBtn">Entrar al CRT ▸</button>
+        </div>
+      </div>
+      <div class="feat wrap" style="padding:0">
+        <div class="f"><div class="ic">📚</div><h4>Primero se explica</h4><p>Cada misión abre con una lección clara; de ahí salen las preguntas.</p></div>
+        <div class="f"><div class="ic">🦠</div><h4>Virus y malware</h4><p>Bestiario digital, ransomware, día cero y confianza cero, bien masticado.</p></div>
+        <div class="f"><div class="ic">🎣</div><h4>Laboratorio CTF</h4><p>Mirá cómo funciona un phishing y capturá banderas, todo simulado.</p></div>
+        <div class="f"><div class="ic">🇨🇷</div><h4>100% tico</h4><p>Conti, la CCSS, RECOPE, el ICE y las estafas por SINPE Móvil.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="scr-map">
+    <div class="wrap">
+      <div class="maphead">
+        <div><h2>Mapa de misiones</h2><p id="mapGreeting">Entrá a la que querás, en el orden que querás.</p></div>
+        <div class="progwrap">
+          <div class="progbar"><i id="mapProgFill"></i></div>
+          <div class="progmeta"><span id="mapProgTxt">0 de 13</span><span id="mapRep">₡0 rep</span></div>
+          <button class="btn primary certbtn" id="goCert" hidden>🎓 Ver mi certificado</button>
+        </div>
+      </div>
+      <div class="grid" id="missionGrid"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="scr-mission"><div class="wrap"><div class="mission" id="missionView"></div></div></section>
+
+  <section class="screen" id="scr-cert">
+    <div class="wrap" style="max-width:680px">
+      <button class="mback" id="certBack">◂ Volver al mapa</button>
+      <div id="certHost"></div>
+    </div>
+  </section>
+
+  <div class="foot wrap">
+    <p><b>Operación Pura Vida</b> — juego educativo de concientización en ciberseguridad.</p>
+    <p>Autor: <b>César Jiménez Segura</b> · 2026 · Hecho con sabor tico 🇨🇷</p>
+    <p class="mono">Todo el laboratorio es una simulación. No se usan sitios, marcas ni datos reales. Enseñar o practicar ataques contra sistemas reales sin autorización es delito (Ley&nbsp;9048).</p>
+  </div>
+</main>
+
+<div class="overlay" id="ovGlos"><div class="modal"><div class="mhead"><span style="font-size:1.3rem">📖</span><h3>Glosario y siglas</h3><button class="icbtn" data-close>✕</button></div><div class="mbody"><div class="tabs"><button class="on" id="tabGlos">Glosario tico</button><button id="tabAcro">Siglas</button></div><input class="input" id="glosSearch" placeholder="Buscar…" style="margin-bottom:12px"><div class="glossary" id="glosList"></div></div></div></div>
+<div class="overlay" id="ovBadge"><div class="modal"><div class="mhead"><span style="font-size:1.3rem">🎖️</span><h3>Tus insignias</h3><button class="icbtn" data-close>✕</button></div><div class="mbody"><p class="hint" id="badgeCount"></p><div class="badgegrid" id="badgeGrid"></div></div></div></div>
+<div class="overlay" id="ovChar"><div class="modal"><div class="mhead"><span style="font-size:1.3rem">🎭</span><h3>Personajes</h3><button class="icbtn" data-close>✕</button></div><div class="mbody"><div class="charlist" id="charList"></div></div></div></div>
+<div class="overlay" id="ovTeach"><div class="modal"><div class="mhead"><span style="font-size:1.3rem">🧑‍🏫</span><h3>Modo docente</h3><button class="icbtn" data-close>✕</button></div><div class="mbody teacher" id="teachBody"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* OPERACIÓN PURA VIDA — motor · Autor del proyecto: César Jiménez Segura (2026)
+   Todo corre en el navegador. El laboratorio es simulado: sin red, sin marcas
+   reales, nada sale de aquí. */
+const $=(s,r=document)=>r.querySelector(s);
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const b64=s=>{try{return btoa(unescape(encodeURIComponent(s)));}catch(e){return "";}};
+const unb64=s=>{try{return decodeURIComponent(escape(atob(s.trim())));}catch(e){return null;}};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
+
+const SAVE_KEY='opv_save_v2';
+const DEFAULT={alias:'',points:0,missions:{},badges:[],glossary:[],started:false,theme:null};
+let S=load();
+function load(){try{const r=localStorage.getItem(SAVE_KEY);if(r)return Object.assign({},DEFAULT,JSON.parse(r));}catch(e){}return JSON.parse(JSON.stringify(DEFAULT));}
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
+function resetAll(){S=JSON.parse(JSON.stringify(DEFAULT));save();}
+
+function applyTheme(){if(S.theme)document.documentElement.setAttribute('data-theme',S.theme);else document.documentElement.removeAttribute('data-theme');}
+$('#themeBtn').addEventListener('click',()=>{const cur=S.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');S.theme=cur==='dark'?'light':'dark';applyTheme();save();});
+applyTheme();
+
+/* ===== SIGLAS (acrónimos) ===== */
+const ACR={
+ CIA:'Confidencialidad, Integridad y Disponibilidad (del inglés Confidentiality, Integrity, Availability).',
+ TI:'Tecnologías de Información.',
+ CRT:'Centro de Respuesta Tico (equipo ficticio de este juego).',
+ NIST:'National Institute of Standards and Technology — Instituto Nacional de Estándares y Tecnología de EE. UU.',
+ CSF:'Cybersecurity Framework — Marco de Ciberseguridad del NIST.',
+ ISO:'International Organization for Standardization — Organización Internacional de Normalización.',
+ IEC:'International Electrotechnical Commission — Comisión Electrotécnica Internacional.',
+ SGSI:'Sistema de Gestión de Seguridad de la Información.',
+ CIS:'Center for Internet Security — Centro para la Seguridad en Internet.',
+ MITRE:'MITRE Corporation, organización sin fines de lucro de EE. UU.',
+ "ATT&CK":'Adversarial Tactics, Techniques and Common Knowledge — Tácticas, Técnicas y Conocimiento Común del Adversario.',
+ OWASP:'Open Worldwide Application Security Project — Proyecto Abierto Mundial de Seguridad en Aplicaciones.',
+ COBIT:'Control Objectives for Information and Related Technologies — Objetivos de Control para la Información y Tecnologías Relacionadas.',
+ GDPR:'General Data Protection Regulation — Reglamento General de Protección de Datos (Unión Europea).',
+ MFA:'Multi-Factor Authentication — Autenticación de Múltiples Factores (clave + un segundo paso).',
+ OTP:'One-Time Password — Contraseña de un solo uso (el "codiguito" que llega por SMS).',
+ PRODHAB:'Agencia de Protección de Datos de los Habitantes (Costa Rica).',
+ CSIRT:'Computer Security Incident Response Team — Equipo de Respuesta a Incidentes de Seguridad Informática.',
+ MICITT:'Ministerio de Ciencia, Innovación, Tecnología y Telecomunicaciones (Costa Rica).',
+ OIJ:'Organismo de Investigación Judicial (Costa Rica).',
+ CCSS:'Caja Costarricense de Seguro Social ("la Caja").',
+ EDUS:'Expediente Digital Único en Salud.',
+ ATV:'Administración Tributaria Virtual (sistema de Hacienda).',
+ TICA:'Tecnología de Información para el Control Aduanero (sistema de aduanas).',
+ ICE:'Instituto Costarricense de Electricidad.',
+ RECOPE:'Refinadora Costarricense de Petróleo.',
+ SINPE:'Sistema Nacional de Pagos Electrónicos (del Banco Central de Costa Rica).',
+ BCCR:'Banco Central de Costa Rica.',
+ APT:'Advanced Persistent Threat — Amenaza Persistente Avanzada (atacante sigiloso y paciente).',
+ DDoS:'Distributed Denial of Service — Denegación de Servicio Distribuida (saturar hasta tumbar un servicio).',
+ VPN:'Virtual Private Network — Red Privada Virtual.',
+ CTF:'Capture The Flag — "Captura la Bandera", reto de seguridad.',
+ CVE:'Common Vulnerabilities and Exposures — identificador mundial de una vulnerabilidad conocida.',
+ ZTA:'Zero Trust Architecture — Arquitectura de Confianza Cero ("nunca confíes, siempre verificá").',
+ IoT:'Internet of Things — Internet de las Cosas (cámaras, relojes, electrodomésticos conectados).',
+ SMB:'Server Message Block — protocolo de Windows para compartir archivos (lo usó WannaCry).',
+ HTTPS:'HyperText Transfer Protocol Secure — protocolo web cifrado, el del candado 🔒.',
+ SMS:'Short Message Service — mensaje de texto del celular.',
+ RAT:'Remote Access Trojan — Troyano de Acceso Remoto (da control del equipo al atacante).'
+};
+
+/* ===== PERSONAJES ===== */
+const CHARS={
+ vale:{name:'Vale Mora',role:'pasante del CRT (vos)',ic:'👩🏽‍💻',bio:'Estudiante de un colegio técnico de Cartago. Curiosa, valiente y con toda la actitud pura vida.'},
+ chayo:{name:'Doña Chayo',role:'mentora',ic:'👵🏽',bio:'Exfuncionaria que vivió el ataque de 2022. Enseña con paciencia y café de chorreador.'},
+ conejo:{name:'Tío Conejo',role:'ingeniería social (del lado bueno)',ic:'🐰',bio:'El astuto de los cuentos ticos. Entiende los engaños para no caer en ellos.'},
+ coyote:{name:'Tío Coyote',role:'líder de Los Coyotes',ic:'🐺',bio:'El villano. Siempre intenta pasarse de vivo… y siempre le sale mal.'},
+ don:{name:'Don Beto',role:'jefe del CRT',ic:'🧔🏽',bio:'Dirige el Centro de Respuesta Tico. Serio pero buena gente.'},
+ tita:{name:'Tita la Yigüirra',role:'asistente del CRT',ic:'🐦',bio:'El yigüirro, ave nacional. Te suelta pistas y te traduce las siglas difíciles.'},
+ memo:{name:'Memo',role:'compañero pasante',ic:'🧑🏽‍🎓',bio:'Otro pasante, medio distraído. A veces casi cae en las trampas: aprendé de sus errores.'},
+ quiros:{name:'Profe Quirós',role:'instructor del CRT',ic:'👨🏽‍🏫',bio:'Da las lecciones. Explica todo bien masticado y sin dejar sigla sin traducir.'},
+ solano:{name:'Oficial Solano',role:'OIJ',ic:'👮🏽',bio:'Del Organismo de Investigación Judicial. Enseña qué es delito y cómo denunciar.'},
+ picado:{name:'Dra. Picado',role:'laboratorio',ic:'👩🏽‍🔬',bio:'Homenaje a Clorito Picado. Estudia el "veneno" digital para crear el antídoto.'},
+ comadreja:{name:'La Comadreja',role:'secuaz de los Coyotes',ic:'🦡',bio:'Mano derecha de Tío Coyote. Experta en correos trampa.'},
+ narr:{name:'',role:'',ic:'🎙️'}
+};
+
+/* ===== REGIONES (color por zona) ===== */
+const REGION={intro:'#2fd6b4',bestiario:'#ff6a5a',zero:'#9d8cff',normas:'#9d8cff',ley:'#f4bd4f',mundo:'#56b4e9',chepe:'#ff6a5a',caja:'#ff6a5a',intel:'#56b4e9',calle:'#f4bd4f',lab:'#2fd6b4',boss:'#9d8cff'};
+
+/* ===== GLOSARIO TICO ===== */
+const GLOSSARY=[
+ {t:'Pura vida',d:'La frase tica por excelencia: saludo, despedida, "todo bien" y actitud de vida.'},
+ {t:'Mae',d:'Amigo, compa. Se usa para todo: "¡Mae, qué chiva!".'},
+ {t:'Tuanis',d:'Muy bueno, buenísimo. "Esa clave con MFA quedó tuanis".'},
+ {t:'Diay',d:'Muletilla multiusos: "pues", "y entonces".'},
+ {t:'Al chile',d:'En serio, de verdad. "Al chile ese correo es falso".'},
+ {t:'Qué chiva',d:'¡Qué bueno!, ¡qué genial!'},
+ {t:'Jupa',d:'Cabeza. "Me duele la jupa de tanto encabezado".'},
+ {t:'Brete',d:'Trabajo. "Parchear servidores es un brete que salva el día".'},
+ {t:'Harina',d:'Plata, dinero. "Sin harina no hay rescate… y aquí no se paga".'},
+ {t:'Upe',d:'"¿Hay alguien?" — se grita al llegar a una casa.'},
+ {t:'Achará',d:'Qué lástima, qué pena.'},
+ {t:'Suave',d:'"Tranquilo", "espérate". "Suave, mae, antes de dar clic".'},
+ {t:'Chunche',d:'Cosa, aparato. "Configurá el chunche de la abuela".'},
+ {t:'Chepe',d:'San José, la capital.'},
+ {t:'Phishing',d:'Correo o mensaje falso que te engaña para robarte datos o claves. En CR llega como "SINPE-estafa".'},
+ {t:'Malware',d:'<b>Mal</b>icious soft<b>ware</b>: cualquier programa hecho para hacer daño (virus, gusanos, troyanos, ransomware…).'},
+ {t:'Virus',d:'Programa dañino que se pega a un archivo y se copia cuando ese archivo se abre o comparte.'},
+ {t:'Gusano',d:'Malware que se copia solo por la red, sin que nadie abra nada. Así se regó WannaCry.'},
+ {t:'Troyano',d:'Programa que se disfraza de algo útil, pero por dentro trae daño (como el caballo de Troya).'},
+ {t:'Ransomware',d:'Malware que cifra (secuestra) tus archivos y pide rescate. Fue lo que vivió Costa Rica en 2022.'},
+ {t:'Spyware',d:'Malware espía: roba información sin que te des cuenta.'},
+ {t:'Rootkit',d:'Malware que se esconde muy hondo en el sistema para no ser detectado.'},
+ {t:'Botnet',d:'Red de equipos infectados ("zombis") que el atacante controla a la vez, por ejemplo para un DDoS.'},
+ {t:'Keylogger',d:'Programa que graba todo lo que escribís en el teclado, incluidas tus claves.'},
+ {t:'Día cero',d:'Un fallo tan nuevo que ni el fabricante lo conoce: hay "cero días" de aviso y aún no hay parche.'},
+ {t:'Confianza cero',d:'Modelo de seguridad: "nunca confíes, siempre verificá". Nadie entra por estar "adentro" de la red.'},
+ {t:'MFA',d:'Autenticación de múltiples factores: además de la clave, pide un segundo paso. Nunca lo dictés por teléfono.'},
+ {t:'Bandera / Flag',d:'En un CTF, el texto secreto que demuestra que resolviste el reto. Formato PURAVIDA{...}.'},
+ {t:'Typosquatting',d:'Dominio falso parecido al real cambiando una letra (bancopuravlda.test con "l" en vez de "i").'},
+ {t:'Vishing',d:'Phishing por llamada de voz: el falso funcionario que pide tu código.'},
+ {t:'Parche',d:'Actualización que corrige un fallo de seguridad. "Parchear a tiempo" frena muchos ataques.'}
+];
+function unlockGlossary(t){if(!S.glossary.includes(t)){S.glossary.push(t);save();}}
+
+/* ===== INSIGNIAS ===== */
+const BADGES={
+ m0:{ic:'📜',nm:'Juramento'},m1:{ic:'🍳',nm:'Tríada'},m2:{ic:'🦠',nm:'Bestiario'},m3:{ic:'🕳️',nm:'Día Cero'},
+ m4:{ic:'📗',nm:'Normas'},m5:{ic:'⚖️',nm:'Ley Tica'},m6:{ic:'🏛️',nm:'Curador'},m7:{ic:'🔥',nm:'Abril Negro'},
+ m8:{ic:'🏥',nm:'La Caja'},m9:{ic:'🛰️',nm:'Inteligencia'},m10:{ic:'📵',nm:'Anti-estafa'},
+ m11:{ic:'🎣',nm:'Cazador CTF'},m12:{ic:'🏆',nm:'Jefe Final'},
+ perfect:{ic:'💎',nm:'Sin pistas'},tico:{ic:'🇨🇷',nm:'100% Tico'},graduado:{ic:'🎓',nm:'Graduado'}
+};
+function grantBadge(id){if(id&&!S.badges.includes(id)){S.badges.push(id);save();toast('🎖️ Insignia: '+BADGES[id].nm);}}
+
+/* ===== MISIONES ===== */
+const MISSIONS=[];
+
+/* ---------- 0 · BIENVENIDA ---------- */
+MISSIONS.push({id:'m0',num:'00',title:'Bienvenida al brete',loc:'CRT · Cartago',ic:'📜',region:'intro',
+ objective:'Entender qué es la ciberseguridad y la ética del hacking, y firmar el código de conducta.',
+ summary:'Tu primer día como pasante. Qué defendemos, por qué importa y una firma.',
+ steps:[
+  {type:'scene',lines:[
+    {who:'narr',text:'Lunes, 7 a.m. Llovizna en Cartago. Entrás al <b>Centro de Respuesta Tico (CRT)</b>, lleno de monitores y olor a café de chorreador.'},
+    {who:'don',text:'¡Upe! Vos sos Vale, la pasante, ¿verdad? Pura vida. Soy Don Beto. Aquí defendemos a las instituciones de los ataques. Sin esto, se repite lo del 2022.'},
+    {who:'tita',text:'¡Pío! Soy Tita, el yigüirro del CRT. Cuando veás una sigla rara, yo te la traduzco. ¡Para eso estoy!'},
+    {who:'vale',me:true,text:'Diay, con toda. ¿Por dónde empiezo?'},
+    {who:'quiros',text:'Por el principio, Vale. Soy el Profe Quirós. Primero te explico, despacito, y después hacés las preguntas. Dale una leída.'}
+  ]},
+  {type:'lesson',teacher:'quiros',title:'¿Qué es la ciberseguridad?',
+   lead:'<b>Ciberseguridad</b> es el conjunto de prácticas para proteger la información y los sistemas digitales de daños, robos o interrupciones. No es solo cosa de computadoras: detrás de cada sistema hay personas, servicios y hasta la salud de un país.',
+   say:{who:'quiros',text:'Fijate que todo gira alrededor de 3 ideas. Si las entendés, entendés el resto.'},
+   concepts:[
+     {ic:'🔐',term:'Confidencialidad',def:'Que solo vea la información quien debe verla.',example:'Tus mensajes del banco no los lee cualquiera.',tico:'Como no dejar la clave del portón pegada en la puerta.'},
+     {ic:'✅',term:'Integridad',def:'Que los datos no se alteren sin permiso.',example:'Que nadie cambie el monto de una transferencia.',tico:'Como que no te "maquillen" la factura de la pulpe.'},
+     {ic:'🟢',term:'Disponibilidad',def:'Que el sistema esté funcionando cuando se necesita.',example:'Que el hospital pueda abrir el expediente del paciente.',tico:'Como que la bomba de agua sirva justo cuando hay que apagar el fuego.'}
+   ],
+   acronyms:['CRT','TI','CIA'],
+   keypoints:['Ciberseguridad = proteger confidencialidad, integridad y disponibilidad.','Detrás de cada sistema hay personas; por eso importa tanto.','El eslabón más atacado NO es la máquina: somos las personas.'],
+   glossary:['Pura vida','Upe','Mae']},
+  {type:'scene',lines:[
+    {who:'chayo',text:'Soy Doña Chayo. Yo estaba aquí cuando Conti nos pegó durísimo. Antes de lo técnico va lo más importante: la <b>ética</b>.'},
+    {who:'chayo',text:'Un hacker ético aprende cómo atacan los malos… para <b>defender</b>, nunca para dañar. Meterse a un sistema real sin permiso es delito (Ley 9048).'}
+  ]},
+  {type:'quiz',prompt:'Según lo que te explicó el Profe Quirós, ¿qué es la <b>ciberseguridad</b>?',
+   options:[
+     {text:'Proteger la confidencialidad, integridad y disponibilidad de la información y los sistemas.',correct:true,feedback:'¡Exacto! Esas son las tres ideas base (la tríada CIA).'},
+     {text:'Solo instalar un antivirus y ya.',correct:false,feedback:'El antivirus ayuda, pero la ciberseguridad es mucho más amplia.'},
+     {text:'Un videojuego nada más.',correct:false,feedback:'Jaja, este es un juego, pero el tema es muy real.'}
+   ]},
+  {type:'quiz',prompt:'Doña Chayo te pregunta: ¿qué es un <b>hacker ético</b>?',
+   options:[
+     {text:'Quien estudia los ataques y, con autorización, ayuda a proteger los sistemas.',correct:true,feedback:'¡Esa es la actitud! Conocer al enemigo para defender, siempre con permiso.'},
+     {text:'El que se mete a cualquier sistema porque sabe cómo.',correct:false,feedback:'No, mae. El conocimiento no da permiso. Eso es delito.'},
+     {text:'Alguien que solo usa antivirus.',correct:false,feedback:'La ética va mucho más allá de una herramienta.'}
+   ]},
+  {type:'decision',prompt:'Un compañero te dice: "Mae, probá esta técnica en la red del colegio de tu primo, solo para ver". ¿Qué hacés?',
+   options:[
+     {text:'Le digo que no: sin autorización es ilegal. Practico solo en laboratorios como este.',outcome:'good',feedback:'¡Tuanis! Para eso existen los laboratorios simulados.'},
+     {text:'Lo pruebo rapidito, nadie se da cuenta.',outcome:'bad',feedback:'¡Sala! Aunque "nadie se dé cuenta", es acceso no autorizado: delito (Ley 9048).'}
+   ]},
+  {type:'reflect',kind:'sign',prompt:'Firmá tu <b>Código de Conducta del CRT</b>. Te comprometés a usar lo que aprendas solo para proteger y nunca para dañar.',placeholder:'Escribí tu alias para firmar',cta:'Firmar y jurar 📜'},
+  {type:'award',badge:'m0',points:80,title:'¡Bienvenida al CRT!',msg:'Firmaste el juramento. Ya sos oficialmente pasante. Ahora sí, a aprender.'}
+ ]});
+
+/* ---------- 1 · TRÍADA CIA ---------- */
+MISSIONS.push({id:'m1',num:'01',title:'La tríada del gallo pinto',loc:'Sala de entrenamiento',ic:'🍳',region:'intro',
+ objective:'Clasificar ataques según la parte de la tríada CIA que afectan.',
+ summary:'Confidencialidad, Integridad y Disponibilidad: las tres patas de la seguridad.',
+ steps:[
+  {type:'lesson',teacher:'quiros',title:'La tríada CIA, con calma',
+   lead:'Toda la seguridad se para sobre tres patas, como un buen gallo pinto necesita arroz, frijoles y culantro. En inglés se llama la tríada <b>CIA</b>, pero ojo: aquí no es la agencia de espías.',
+   say:{who:'tita',text:'¡Pío! CIA = Confidentiality, Integrity, Availability. En tico: Confidencialidad, Integridad y Disponibilidad.'},
+   concepts:[
+     {ic:'🔐',term:'Confidencialidad',def:'Nadie ve lo que no debe.',example:'Un espía que lee los correos internos la rompe.',tico:'La información privada, bien guardada.'},
+     {ic:'✅',term:'Integridad',def:'Los datos no se alteran.',example:'Cambiar el contenido de un sitio (defacement) la rompe.',tico:'Que nadie te edite los números.'},
+     {ic:'🟢',term:'Disponibilidad',def:'El sistema está cuando se ocupa.',example:'Un ataque DDoS que tumba la página la rompe.',tico:'Que el servicio no se caiga a la hora clave.'}
+   ],
+   acronyms:['CIA','DDoS'],
+   keypoints:['Todo ataque se puede leer por la pata que afecta.','Un mismo ataque puede golpear más de una pata.','Pensar en CIA ayuda a decidir qué proteger primero.'],
+   glossary:['Phishing']},
+  {type:'scene',lines:[
+    {who:'vale',me:true,text:'Diay, profe, entonces la seguridad es como un banquito de tres patas, ¿verdad? Le quito una y me voy de jupa al suelo.'},
+    {who:'chayo',text:'¡Exacto, mija! Confidencialidad, integridad y disponibilidad. Quitá una y todo se tambalea.'},
+    {who:'memo',text:'Mae, ¿y cuál es la más importante de las tres?'},
+    {who:'chayo',text:'Depende del caso, Memo. En un hospital pesa la disponibilidad; en tus mensajes, la confidencialidad. Por eso hay que pensar, no memorizar.'},
+    {who:'vale',me:true,text:'Qué chiva, ya le voy agarrando el tucán.'}
+  ]},
+  {type:'classify',prompt:'Mandá cada ataque a la pata de la tríada que <b>más</b> afecta.',
+   buckets:[{id:'C',label:'Confidencialidad',desc:'Nadie ve lo que no debe'},{id:'I',label:'Integridad',desc:'Los datos no se alteran'},{id:'D',label:'Disponibilidad',desc:'El sistema está cuando se ocupa'}],
+   items:[
+     {text:'Robo y filtración de una base de datos de clientes',bucket:'C',why:'Exponer datos privados rompe la confidencialidad.'},
+     {text:'Ataque DDoS que tumba la página del banco',bucket:'D',why:'Satura el servicio: disponibilidad.'},
+     {text:'Alterar el monto de una transferencia',bucket:'I',why:'Cambiar datos sin permiso: integridad.'},
+     {text:'Ransomware que cifra los expedientes del hospital',bucket:'D',why:'Si no podés abrir los archivos, perdés disponibilidad.'},
+     {text:'Un espía que lee los correos internos',bucket:'C',why:'Leer lo privado: confidencialidad.'},
+     {text:'Defacement: cambian el contenido de un sitio',bucket:'I',why:'Modifican el contenido real: integridad.'}
+   ]},
+  {type:'quiz',prompt:'¿Cuál trío describe correctamente la tríada CIA en español?',
+   options:[
+     {text:'Confidencialidad, Integridad, Disponibilidad',correct:true,feedback:'¡Esa es! Las tres patas.'},
+     {text:'Contraseña, Internet, Antivirus',correct:false,feedback:'Son herramientas sueltas, no la tríada.'},
+     {text:'Cifrado, Inicio de sesión, Descarga',correct:false,feedback:'Conceptos sueltos, no la tríada.'}
+   ]},
+  {type:'award',badge:'m1',points:120,title:'Tríada dominada',msg:'Ya leés cualquier ataque por la pata que afecta. Base lista.'}
+ ]});
+
+/* ---------- 2 · BESTIARIO (MALWARE) ---------- */
+MISSIONS.push({id:'m2',num:'02',title:'Bestiario digital',loc:'Laboratorio Picado',ic:'🦠',region:'bestiario',
+ objective:'Reconocer los tipos de malware y cómo se diferencian.',
+ summary:'Virus, gusano, troyano, ransomware, spyware, rootkit, botnet y keylogger.',
+ steps:[
+  {type:'scene',lines:[
+    {who:'picado',text:'Bienvenida al laboratorio. Soy la Dra. Picado. Aquí estudiamos las "criaturas" digitales, como quien estudia el veneno de las serpientes para hacer el antídoto.'},
+    {who:'picado',text:'Todas son <b>malware</b> (de "malicious software", software malicioso), pero cada una se comporta distinto. Vamos a conocer el bestiario.'}
+  ]},
+  {type:'lesson',teacher:'picado',title:'El bestiario del malware',
+   lead:'<b>Malware</b> es cualquier programa hecho para hacer daño. No todos son iguales: la diferencia está en <b>cómo se propagan</b> y <b>qué buscan</b>. Conocé a las criaturas:',
+   say:{who:'tita',text:'¡Pío! RAT = Remote Access Trojan, un troyano que le da control remoto del equipo al atacante.'},
+   concepts:[
+     {ic:'🦠',term:'Virus',def:'Se pega a un archivo y se copia cuando ese archivo se abre o se comparte.',example:'Un documento infectado que pasás por USB.',tico:'Como una gripe: se pega de archivo en archivo.'},
+     {ic:'🪱',term:'Gusano (worm)',def:'Se copia solo por la red, sin que nadie abra nada.',example:'WannaCry saltó de equipo en equipo solito.',tico:'No necesita que le abrás la puerta: se mete solo.'},
+     {ic:'🐴',term:'Troyano',def:'Se disfraza de algo útil, pero por dentro trae daño.',example:'Un "crack" de un juego que en realidad te espía.',tico:'El caballo de Troya: bonito por fuera, trampa por dentro.'},
+     {ic:'🔒',term:'Ransomware',def:'Cifra (secuestra) tus archivos y pide rescate.',example:'Conti contra Hacienda en 2022.',tico:'Te ponen candado a TODO y piden harina.'},
+     {ic:'🕵️',term:'Spyware',def:'Espía y roba información sin que te des cuenta.',example:'Un keylogger que graba lo que escribís.',tico:'El metiche que anota todo lo tuyo.'},
+     {ic:'👻',term:'Rootkit',def:'Se esconde muy hondo en el sistema para no ser detectado.',example:'Malware que se oculta del antivirus.',tico:'El que se mete debajo de la cama y no sale.'},
+     {ic:'🤖',term:'Botnet',def:'Red de equipos infectados ("zombis") que el atacante controla a la vez.',example:'Miles de equipos lanzando un DDoS juntos.',tico:'Un ejército de aparatos secuestrados.'},
+     {ic:'⌨️',term:'Keylogger',def:'Graba todo lo que escribís, incluidas tus claves.',example:'Captura tu contraseña mientras la tecleás.',tico:'El soplón del teclado.'}
+   ],
+   acronyms:['RAT','DDoS'],
+   keypoints:['El gusano se propaga solo por red; el virus necesita un archivo.','El troyano engaña disfrazándose de algo bueno.','El ransomware cifra y cobra; el spyware roba en silencio.','Una botnet junta muchos equipos zombis para atacar en grupo.'],
+   glossary:['Malware','Virus','Gusano','Troyano','Ransomware','Spyware','Rootkit','Botnet','Keylogger']},
+  {type:'scene',lines:[
+    {who:'memo',text:'Doctora, al chile yo creía que todo era "virus". ¿Entonces un gusano no es virus?'},
+    {who:'picado',text:'Son primos, Memo, pero el gusano viaja solito por la red; el virus necesita que alguien abra un archivo.'},
+    {who:'vale',me:true,text:'O sea que el gusano es el colado que se mete a la fiesta sin que nadie le abra el portón.'},
+    {who:'picado',text:'¡Tal cual! Y el troyano sí toca el timbre… pero disfrazado de pizza que nadie pidió.'},
+    {who:'memo',text:'Jaja, qué sala. Ya no instalo "cracks" raros, se los juro.'}
+  ]},
+  {type:'classify',prompt:'Emparejá cada criatura con su comportamiento clave.',
+   buckets:[{id:'red',label:'Se copia solo por red',desc:'sin que abras nada'},{id:'disf',label:'Se disfraza',desc:'parece útil'},{id:'cifra',label:'Secuestra y cobra',desc:'pide rescate'},{id:'espia',label:'Roba en silencio',desc:'sin que te des cuenta'}],
+   items:[
+     {text:'Gusano (worm)',bucket:'red',why:'El gusano se propaga solo por la red.'},
+     {text:'Troyano',bucket:'disf',why:'El troyano se disfraza de algo útil.'},
+     {text:'Ransomware',bucket:'cifra',why:'El ransomware cifra y pide rescate.'},
+     {text:'Spyware / keylogger',bucket:'espia',why:'El spyware roba información en silencio.'}
+   ]},
+  {type:'quiz',prompt:'¿Cuál es la diferencia principal entre un <b>virus</b> y un <b>gusano</b>?',
+   options:[
+     {text:'El gusano se propaga solo por la red; el virus necesita que alguien abra o comparta un archivo.',correct:true,feedback:'¡Exacto! Por eso los gusanos se riegan tan rápido.'},
+     {text:'No hay ninguna diferencia, son lo mismo.',correct:false,feedback:'Sí la hay: la forma de propagarse.'},
+     {text:'El virus es bueno y el gusano es malo.',correct:false,feedback:'Ambos son malware. La diferencia es cómo se propagan.'}
+   ]},
+  {type:'quiz',prompt:'Un programa dice ser un "optimizador gratis", pero al instalarlo roba tus claves. ¿Qué tipo de malware es?',
+   options:[
+     {text:'Un troyano (se disfraza de algo útil).',correct:true,feedback:'¡Correcto! Clásico caballo de Troya.'},
+     {text:'Un gusano.',correct:false,feedback:'El gusano se copia por red; aquí el truco es el disfraz: es troyano.'},
+     {text:'Una botnet.',correct:false,feedback:'La botnet es una red de zombis; aquí el engaño es el disfraz: troyano.'}
+   ]},
+  {type:'award',badge:'m2',points:200,title:'Bestiario dominado',msg:'Ya distinguís las criaturas digitales por cómo se comportan. ¡La Dra. Picado está orgullosa!'}
+ ]});
+
+/* ---------- 3 · DÍA CERO Y CONFIANZA CERO ---------- */
+MISSIONS.push({id:'m3',num:'03',title:'Día Cero y Confianza Cero',loc:'Base Espacial Plasma',ic:'🕳️',region:'zero',
+ objective:'Entender qué es un ataque de día cero y el modelo de confianza cero.',
+ summary:'Dos conceptos que suenan parecido pero son muy distintos.',
+ steps:[
+  {type:'scene',lines:[
+    {who:'quiros',text:'Hoy dos palabras que confunden a todo el mundo: "día cero" y "confianza cero". Suenan igual, pero una es un <b>ataque</b> y la otra es una <b>defensa</b>.'}
+  ]},
+  {type:'lesson',teacher:'quiros',title:'Día cero: el fallo sin parche',
+   lead:'Un <b>ataque de día cero</b> (zero-day) aprovecha un fallo tan nuevo que ni el fabricante lo conoce. Como nadie lo sabía, hay "cero días" de aviso y <b>todavía no existe el parche</b> para taparlo. Por eso son tan peligrosos.',
+   say:{who:'tita',text:'¡Pío! Un "parche" es la actualización que tapa el hueco. Cada fallo conocido tiene un código mundial llamado CVE.'},
+   concepts:[
+     {ic:'🕳️',term:'Vulnerabilidad',def:'Un hueco o fallo en un programa.',example:'Un error en el código de una app.',tico:'Un portón con el pasador flojo.'},
+     {ic:'💥',term:'Exploit',def:'El truco o código que aprovecha ese hueco.',example:'El programa que usa el fallo para entrar.',tico:'La patada exacta que abre ese portón flojo.'},
+     {ic:'⏱️',term:'Día cero (zero-day)',def:'Fallo nuevo, sin parche todavía.',example:'Log4Shell en 2021 sorprendió a medio mundo.',tico:'Te atacan por un hueco que nadie sabía que existía.'}
+   ],
+   acronyms:['CVE'],
+   keypoints:['Día cero = fallo desconocido, aún sin parche.','La mejor defensa: actualizar rápido apenas sale el parche.','Un fallo conocido se identifica con un código CVE.'],
+   glossary:['Día cero','Parche']},
+  {type:'lesson',teacher:'quiros',title:'Confianza cero: nunca confíes, siempre verificá',
+   lead:'La <b>confianza cero</b> (Zero Trust) es un modelo de defensa. Antes se pensaba que todo lo que estaba "adentro" de la red era confiable. Hoy no: se asume que cualquiera puede estar comprometido, así que <b>se verifica siempre</b>, a cada paso, sin importar si estás "adentro" o "afuera".',
+   say:{who:'chayo',text:'Mija, es como en la entrada de un concierto: aunque ya estés adentro, para entrar al camerino te vuelven a pedir el pase.'},
+   concepts:[
+     {ic:'🚫',term:'Nunca confiar por defecto',def:'Estar dentro de la red no te da permiso automático.',example:'Un equipo infectado ya está "adentro".',tico:'Aunque entrés a la casa, no abrís la caja fuerte sin llave.'},
+     {ic:'🔎',term:'Verificar siempre',def:'Cada acceso se comprueba: quién sos y si te toca.',example:'Pedir MFA aunque ya iniciaste sesión antes.',tico:'El guarda revisa el pase en cada puerta.'},
+     {ic:'🧩',term:'Mínimo privilegio',def:'Cada quien accede solo a lo que necesita.',example:'El de contabilidad no entra a los servidores de salud.',tico:'Cada llave abre solo su cuartito.'}
+   ],
+   acronyms:['ZTA','MFA','VPN'],
+   keypoints:['Confianza cero = "nunca confíes, siempre verificá".','Estar dentro de la red NO es un permiso.','Se combina con MFA y mínimo privilegio.'],
+   glossary:['Confianza cero','MFA']},
+  {type:'scene',lines:[
+    {who:'vale',me:true,text:'Profe, me enreda: "día cero" y "confianza cero" suenan igualitas.'},
+    {who:'quiros',text:'Suenan parecido pero son opuestas, Vale. El día cero es un ATAQUE por un hueco sin parche. La confianza cero es una DEFENSA: no confiar en nadie solo por estar adentro.'},
+    {who:'tita',text:'¡Pío! Una es el problema; la otra, la actitud para no caer.'},
+    {who:'vale',me:true,text:'Ah, ya. El día cero es el hueco en la calle que nadie reportó; la confianza cero es manejar con cuidado aunque conozcás la ruta.'},
+    {who:'quiros',text:'¡Esa analogía está tuanis! Me la robo para la próxima clase.'}
+  ]},
+  {type:'quiz',prompt:'¿Qué es un <b>ataque de día cero</b>?',
+   options:[
+     {text:'Aprovecha un fallo tan nuevo que todavía no tiene parche.',correct:true,feedback:'¡Correcto! "Cero días" de aviso: nadie lo conocía.'},
+     {text:'Un ataque que solo pasa el primer día del mes.',correct:false,feedback:'Nada que ver con el calendario. Es un fallo sin parche.'},
+     {text:'Un virus que dura cero días.',correct:false,feedback:'No; lo "cero" es el aviso previo, no la duración.'}
+   ]},
+  {type:'quiz',prompt:'La mejor defensa contra que te peguen con fallos ya conocidos es…',
+   options:[
+     {text:'Parchear (actualizar) rápido apenas sale la corrección.',correct:true,feedback:'¡Sí! El parche a tiempo cierra el hueco.'},
+     {text:'Nunca actualizar nada.',correct:false,feedback:'Al revés: no actualizar deja los huecos abiertos.'},
+     {text:'Apagar el equipo para siempre.',correct:false,feedback:'Eso mata la disponibilidad. La respuesta es parchear.'}
+   ]},
+  {type:'decision',prompt:'En confianza cero, un empleado ya inició sesión en la mañana. A media tarde intenta entrar a un sistema sensible. ¿Qué hace el sistema?',
+   options:[
+     {text:'Lo vuelve a verificar (por ejemplo, pide MFA): nunca confía solo porque "ya estaba adentro".',outcome:'good',feedback:'¡Esa es la idea! Verificar siempre, en cada paso.'},
+     {text:'Lo deja pasar sin revisar porque ya entró en la mañana.',outcome:'bad',feedback:'Eso es lo viejo. En confianza cero se verifica en cada acceso.'}
+   ]},
+  {type:'award',badge:'m3',points:230,title:'Cero y cero, claros',msg:'Ya no confundís el ataque (día cero) con la defensa (confianza cero). ¡Grande!'}
+ ]});
+
+/* ---------- 4 · NORMAS ---------- */
+MISSIONS.push({id:'m4',num:'04',title:'El álbum de las normas',loc:'Base Espacial Plasma',ic:'📗',region:'normas',
+ objective:'Relacionar cada marco o estándar con la pregunta que ayuda a responder.',
+ summary:'NIST, ISO, CIS, MITRE ATT&CK, OWASP… cada sigla, explicada.',
+ steps:[
+  {type:'scene',lines:[
+    {who:'chayo',text:'Aquí cuelgan los marcos de seguridad como un álbum de figuritas del mundial. Cada uno responde una pregunta distinta.'},
+    {who:'tita',text:'¡Pío! Tranquilos, que yo les traduzco cada sigla. Son más fáciles de lo que suenan.'}
+  ]},
+  {type:'lesson',teacher:'quiros',title:'Los marcos, sin miedo a las siglas',
+   lead:'Nadie inventa su propia seguridad desde cero: nos paramos sobre marcos que resumen miles de incidentes. Lo importante no es memorizar siglas, sino saber <b>qué pregunta responde cada uno</b>.',
+   say:{who:'tita',text:'¡Pío! Ojo: ATT&CK no es "ataque" en inglés por casualidad; significa Adversarial Tactics, Techniques and Common Knowledge.'},
+   concepts:[
+     {ic:'🗺️',term:'NIST CSF 2.0',def:'El "mapa" general con 6 funciones: Gobernar, Identificar, Proteger, Detectar, Responder, Recuperar.',example:'Sirve para organizar toda la defensa.',tico:'La guía de vuelo: nadie despega sin revisarla.'},
+     {ic:'📜',term:'ISO/IEC 27001',def:'Norma internacional certificable para gestionar la seguridad (un SGSI).',example:'Una empresa se certifica para demostrar que lo hace bien.',tico:'El sello de calidad de la seguridad.'},
+     {ic:'🧰',term:'CIS Controls',def:'Lista priorizada de controles prácticos (respaldos, MFA, inventario…).',example:'"¿Qué hago primero?" CIS te lo ordena.',tico:'La lista del súper, de lo más importante a lo menos.'},
+     {ic:'🎯',term:'MITRE ATT&CK',def:'Catálogo de las tácticas y técnicas que usan los atacantes.',example:'El phishing aparece como técnica de acceso inicial.',tico:'El "modus operandi" de los malos, anotado.'},
+     {ic:'🕸️',term:'OWASP Top 10',def:'Los 10 riesgos más comunes en aplicaciones web.',example:'Guía a quienes programan sitios y apps.',tico:'Los 10 huecos más repetidos en las páginas web.'}
+   ],
+   acronyms:['NIST','CSF','ISO','IEC','SGSI','CIS','MITRE','ATT&CK','OWASP','COBIT','GDPR'],
+   keypoints:['NIST CSF 2.0 = el mapa general (6 funciones).','ISO/IEC 27001 = la certificación de seguridad.','MITRE ATT&CK = cómo operan los atacantes.','OWASP Top 10 = riesgos en apps web.'],
+   glossary:[]},
+  {type:'scene',lines:[
+    {who:'memo',text:'Mae, son un montón de siglas. NIST, ISO, OWASP… se me hace un arroz con mango.'},
+    {who:'tita',text:'¡Pío, suave! Cada una responde UNA sola pregunta. No hay que memorizarlas, hay que saber cuál sacar.'},
+    {who:'vale',me:true,text:'Profe, ¿y si uso todas a la vez por si acaso?'},
+    {who:'quiros',text:'No hace falta, Vale. Es como la caja de herramientas: no usás el martillo para todo. NIST es el mapa, ISO el sello, OWASP para las páginas web.'},
+    {who:'memo',text:'Ah, diay, así sí. Menos enredo.'}
+  ]},
+  {type:'quiz',prompt:'Querés un "mapa" general con 6 funciones (Gobernar, Identificar, Proteger, Detectar, Responder, Recuperar). ¿Cuál usás?',
+   options:[
+     {text:'NIST CSF 2.0',correct:true,feedback:'¡Correcto! El marco de ciberseguridad del NIST y sus 6 funciones.'},
+     {text:'OWASP Top 10',correct:false,feedback:'OWASP es de apps web, no el mapa general.'},
+     {text:'ISO 22000',correct:false,feedback:'Esa es de inocuidad alimentaria. ¡Ojo con el número!'}
+   ]},
+  {type:'quiz',prompt:'La empresa quiere <b>certificarse</b> internacionalmente en gestión de seguridad de la información. ¿Qué norma busca?',
+   options:[
+     {text:'ISO/IEC 27001',correct:true,feedback:'¡Esa! La norma certificable del SGSI.'},
+     {text:'MITRE ATT&CK',correct:false,feedback:'Eso cataloga ataques, no es una certificación.'},
+     {text:'OWASP',correct:false,feedback:'OWASP es de apps web; no es la certificación.'}
+   ]},
+  {type:'quiz',prompt:'Querés nombrar las <b>técnicas</b> que usan los atacantes (ej. "Phishing" como acceso inicial). ¿Qué catálogo consultás?',
+   options:[
+     {text:'MITRE ATT&CK',correct:true,feedback:'¡Correcto! ATT&CK cataloga cómo operan los atacantes.'},
+     {text:'CIS Controls',correct:false,feedback:'CIS son controles de defensa; no cataloga técnicas de ataque.'},
+     {text:'GDPR',correct:false,feedback:'El GDPR es protección de datos en Europa.'}
+   ]},
+  {type:'quiz',prompt:'En ISO/IEC 27002:2022, formar y concientizar al personal (¡como este juego!) es un control de tipo…',
+   options:[
+     {text:'De personas',correct:true,feedback:'¡Exacto! 27002:2022 agrupa en organizacionales, de personas, físicos y tecnológicos.'},
+     {text:'Físico',correct:false,feedback:'Los físicos son cámaras y cerraduras.'},
+     {text:'Tecnológico',correct:false,feedback:'Esos son cifrado y respaldos. Formar gente va en "de personas".'}
+   ]},
+  {type:'award',badge:'m4',points:220,title:'¡Álbum completo!',msg:'Ya sabés qué marco sacar para cada pregunta, y qué significa cada sigla.'}
+ ]});
+
+/* ---------- 5 · LEY TICA ---------- */
+MISSIONS.push({id:'m5',num:'05',title:'La ley en Chepe',loc:'San José · Tribunales',ic:'⚖️',region:'ley',
+ objective:'Identificar qué ley costarricense aplica y a quién se reporta.',
+ summary:'Ley 8968, Ley 9048, Convenio de Budapest y el CSIRT-CR.',
+ steps:[
+  {type:'scene',lines:[
+    {who:'solano',text:'Soy el Oficial Solano, del OIJ. En Costa Rica la ciberseguridad también es cosa de leyes. Te explico las que más importan.'}
+  ]},
+  {type:'lesson',teacher:'solano',title:'Las reglas del juego, en Costa Rica',
+   lead:'Saber la ley te protege a vos y te dice qué hacer cuando algo pasa. Estas son las piezas clave:',
+   say:{who:'tita',text:'¡Pío! PRODHAB es la Agencia de Protección de Datos de los Habitantes; OIJ es el Organismo de Investigación Judicial.'},
+   concepts:[
+     {ic:'🧍',term:'Ley 8968',def:'Protección de datos personales. Creó la PRODHAB.',example:'Una app no puede recoger datos de más ni dejarlos expuestos.',tico:'Tus datos son tuyos, no de la app.'},
+     {ic:'⚖️',term:'Ley 9048',def:'Metió los delitos informáticos al Código Penal (2012).',example:'Entrar sin permiso a un sistema es delito.',tico:'"Por jugar" no es excusa: es delito.'},
+     {ic:'🌐',term:'Convenio de Budapest',def:'Cooperación internacional contra el cibercrimen. Se aprobó con la Ley 9452 (2017).',example:'Permite coordinar con otros países.',tico:'El crimen no respeta fronteras; la cooperación tampoco.'},
+     {ic:'🛟',term:'CSIRT-CR',def:'Equipo nacional de respuesta a incidentes, del MICITT.',example:'A quién se reporta un ciberataque grande.',tico:'El 9-1-1 de los ciberataques del país.'}
+   ],
+   acronyms:['PRODHAB','OIJ','CSIRT','MICITT'],
+   keypoints:['Ley 8968 = datos personales (PRODHAB).','Ley 9048 = delitos informáticos.','Budapest = cooperación internacional (Ley 9452, 2017).','Incidente grande → se reporta al OIJ y al CSIRT-CR.'],
+   glossary:['Chepe']},
+  {type:'scene',lines:[
+    {who:'memo',text:'Oficial, ¿y si yo "solo pruebo" entrar a un sistema por curiosidad, sin robar nada?'},
+    {who:'solano',text:'Aunque no robés nada, Memo, entrar sin permiso ya es delito (Ley 9048). La curiosidad se practica en laboratorios como este.'},
+    {who:'vale',me:true,text:'¿Y si una app me pide un montón de datos que ni ocupa?'},
+    {who:'solano',text:'Ahí entra la Ley 8968: podés reclamar ante la PRODHAB. Sus datos son suyos, no de la app.'},
+    {who:'memo',text:'Qué bueno saber que uno tiene a quién recurrir.'}
+  ]},
+  {type:'decision',prompt:'<b>Caso 1.</b> Una app recoge más datos de los necesarios y los deja expuestos. ¿Qué ley se vulnera y quién vela por eso?',
+   options:[
+     {text:'Ley 8968 de Protección de Datos; vela la PRODHAB.',outcome:'good',feedback:'¡Correcto! La 8968 protege tus datos y la PRODHAB la hace cumplir.'},
+     {text:'Ninguna, los datos son de la app.',outcome:'bad',feedback:'No, mae. Tus datos son tuyos (Ley 8968).'}
+   ]},
+  {type:'quiz',prompt:'<b>Caso 2.</b> Alguien entra sin autorización a un sistema del Estado y roba información. En el Código Penal tico eso cae en…',
+   options:[
+     {text:'Los delitos informáticos (Ley 9048).',correct:true,feedback:'¡Así es! La Ley 9048 (2012) los metió al Código Penal.'},
+     {text:'Una simple falta administrativa.',correct:false,feedback:'Qué va. Es delito penal (Ley 9048).'},
+     {text:'Nada, no es ilegal.',correct:false,feedback:'Sí lo es: delito informático.'}
+   ]},
+  {type:'quiz',prompt:'<b>Caso 3.</b> Tu institución sufre un ciberataque grande. Además del OIJ, ¿a qué equipo del MICITT se reporta?',
+   options:[
+     {text:'Al CSIRT-CR.',correct:true,feedback:'¡Sí! El CSIRT-CR coordina la respuesta a nivel país.'},
+     {text:'A la municipalidad.',correct:false,feedback:'La muni no maneja ciberincidentes nacionales.'},
+     {text:'A nadie, se arregla en silencio.',correct:false,feedback:'Ocultarlo empeora todo. Se reporta.'}
+   ],note:'Nota: sobre Budapest, un documento del MICITT menciona también 2019 para otro acto; la adhesión como tal es por la Ley 9452 de 2017.'},
+  {type:'award',badge:'m5',points:200,title:'Leyes claras',msg:'Ya sabés qué ley aplica y a quién llamar. En CR, la ciberseguridad también es legal.'}
+ ]});
+
+/* ---------- 6 · MUSEO DEL MALWARE MUNDIAL ---------- */
+MISSIONS.push({id:'m6',num:'06',title:'Museo del Malware',loc:'Sala de historia',ic:'🏛️',region:'mundo',
+ objective:'Explicar el vector de entrada y la lección de los grandes ataques mundiales.',
+ summary:'WannaCry, NotPetya, Equifax, SolarWinds, Colonial Pipeline, Log4Shell, MOVEit.',
+ steps:[
+  {type:'scene',lines:[
+    {who:'conejo',text:'¡Pssst! Soy Tío Conejo. Antes de los casos ticos, repasemos los clásicos mundiales. Cada "obra" del museo tiene su moraleja.'}
+  ]},
+  {type:'lesson',teacher:'conejo',title:'Las grandes lecciones del mundo',
+   lead:'Casi todos los grandes ataques entraron por un hueco que se pudo haber cerrado. Mirá el patrón: la lección casi siempre es sencilla.',
+   say:{who:'tita',text:'¡Pío! SMB es un protocolo de Windows para compartir archivos; CVE es el código de una vulnerabilidad conocida.'},
+   concepts:[
+     {ic:'💉',term:'WannaCry (2017)',def:'Gusano que usó un fallo de Windows (SMB) sin parchear.',example:'Afectó equipos en ~150 países.',tico:'Lección: parchear a tiempo.'},
+     {ic:'📦',term:'NotPetya (2017)',def:'Entró por una actualización troyanizada de un software contable.',example:'Se disfrazó de ransomware pero destruía datos.',tico:'Lección: cuidar la cadena de suministro y tener respaldos.'},
+     {ic:'🛢️',term:'Colonial Pipeline (2021)',def:'Cuenta de acceso remoto sin MFA.',example:'Paralizó un oleoducto en EE. UU.',tico:'Lección: activar MFA en los accesos.'},
+     {ic:'🪵',term:'Log4Shell (2021)',def:'Fallo crítico en una librería muy usada (Log4j); un día cero.',example:'Medio mundo corrió a parchear.',tico:'Lección: saber qué software tenés (inventario).'}
+   ],
+   acronyms:['SMB','CVE','MFA'],
+   keypoints:['Parchear a tiempo habría frenado WannaCry.','La cadena de suministro es un blanco (NotPetya).','MFA habría salvado a Colonial Pipeline.','No podés proteger lo que no sabés que tenés (inventario).'],
+   glossary:['Ransomware','MFA','Parche']},
+  {type:'scene',lines:[
+    {who:'conejo',text:'Fijate, Vale: ¿qué tienen en común casi todos estos casos tan grandes?'},
+    {who:'vale',me:true,text:'Mmm… que entraron por algo que se pudo evitar: un parche sin poner, una clave sin MFA…'},
+    {who:'conejo',text:'¡Esa es, astuta! No fue magia. Fue una puertita que alguien dejó entreabierta.'},
+    {who:'vale',me:true,text:'O sea que la lección no es tenerle miedo a los hackers, sino cerrar uno las puertas.'},
+    {who:'conejo',text:'Diay, por algo me dicen el Tío Conejo: pensar antes de caer.'}
+  ]},
+  {type:'quiz',prompt:'🖼️ <b>WannaCry</b> se regó usando equipos Windows <b>sin actualizar</b>. ¿La lección?',
+   options:[
+     {text:'Parchear / actualizar a tiempo.',correct:true,feedback:'¡Correcto! Un parche a tiempo lo frena.'},
+     {text:'Usar contraseñas más largas.',correct:false,feedback:'Ayuda en otros casos, pero esto entró por un fallo sin parchear.'},
+     {text:'Apagar el wifi.',correct:false,feedback:'Nada que ver; el problema era el software desactualizado.'}
+   ]},
+  {type:'quiz',prompt:'🖼️ <b>Colonial Pipeline</b> cayó porque una cuenta remota <b>no tenía MFA</b>. Lección:',
+   options:[
+     {text:'Activar MFA en los accesos, sobre todo remotos.',correct:true,feedback:'¡Sí! Un segundo factor bloquea una clave robada.'},
+     {text:'Comprar más tuberías.',correct:false,feedback:'Jaja, no. Faltó MFA.'},
+     {text:'Nada, fue mala suerte.',correct:false,feedback:'No fue suerte: faltó un control básico.'}
+   ]},
+  {type:'order',prompt:'Ordená estos ataques del <b>más antiguo al más reciente</b>.',
+   items:[{id:'wc',label:'WannaCry'},{id:'eq',label:'Equifax'},{id:'sw',label:'SolarWinds'},{id:'l4',label:'Log4Shell'},{id:'mv',label:'MOVEit'}],
+   correctOrder:['wc','eq','sw','l4','mv'],
+   dates:{wc:'2017 (may)',eq:'2017',sw:'2020',l4:'2021 (dic)',mv:'2023'},
+   whyRight:'WannaCry y Equifax (2017) → SolarWinds (2020) → Log4Shell (2021) → MOVEit (2023).'},
+  {type:'award',badge:'m6',points:200,title:'Curador graduado',msg:'Conocés los clásicos y sus moralejas. Ahora, a los casos de la casa.'}
+ ]});
+
+/* ---------- 7 · CONTI ---------- */
+MISSIONS.push({id:'m7',num:'07',title:'Abril negro: Operación Conti',loc:'Ministerio · Chepe',ic:'🔥',region:'chepe',
+ objective:'Reconstruir la respuesta de un país a un ransomware usando las funciones del NIST CSF 2.0.',
+ summary:'El corazón de la historia: el ataque de Conti a Hacienda en 2022.',
+ steps:[
+  {type:'scene',lines:[
+    {who:'chayo',text:'Esta misión es personal para mí. Domingo de Pascua, 17 de abril de 2022. Alguien se metió al Ministerio de Hacienda. Era el grupo <b>Conti</b>.'},
+    {who:'chayo',text:'Entraron con credenciales robadas, se regaron y cifraron todo. Cayeron los sistemas de impuestos (ATV) y de aduanas (TICA). Volvimos al papel.'}
+  ]},
+  {type:'lesson',teacher:'chayo',title:'Qué pasó en el Abril Negro',
+   lead:'En 2022 Costa Rica vivió el ciberataque más grande de su historia. Entenderlo bien es la mejor vacuna. Esto es lo esencial (las cifras vienen de la prensa, no de un informe oficial):',
+   say:{who:'tita',text:'¡Pío! ATV = Administración Tributaria Virtual; TICA = Tecnología de Información para el Control Aduanero.'},
+   concepts:[
+     {ic:'🚪',term:'Cómo entraron',def:'Con credenciales robadas instalaron malware y se propagaron.',example:'De un equipo saltaron a muchos.',tico:'Una llave robada abrió toda la casa.'},
+     {ic:'🏛️',term:'A quién pegó',def:'Según la prensa, ~30 instituciones; Hacienda, la más golpeada.',example:'Impuestos y aduanas, a mano.',tico:'Medio Estado, con lápiz y papel.'},
+     {ic:'💰',term:'El rescate',def:'Pidieron US$10 millones y luego exigieron US$20.',example:'Decían querer botar al gobierno.',tico:'Pura presión… pero no se pagó.'},
+     {ic:'🚨',term:'La respuesta',def:'El 8 de mayo de 2022 se declaró emergencia nacional.',example:'Reportes la señalan como la primera por ransomware.',tico:'El país dijo: aguantamos y reconstruimos.'}
+   ],
+   acronyms:['ATV','TICA','APT'],
+   keypoints:['Entraron con credenciales robadas (de ahí la MFA).','No se pagó el rescate: se reconstruyó desde respaldos.','Costa Rica declaró emergencia nacional.','Las cifras son de prensa, no de un informe forense oficial.'],
+   glossary:['Harina','Ransomware']},
+  {type:'scene',lines:[
+    {who:'chayo',text:'Esos días no dormíamos, mija. Todo el país con lápiz y papel. Dolía de verdad.'},
+    {who:'vale',me:true,text:'Doña Chayo, ¿y por qué no pagaron y ya? Hubiera sido más rápido…'},
+    {who:'chayo',text:'Porque pagar no te garantiza que te devuelvan nada, y de paso le das harina al crimen pa\' que siga. Aguantamos y reconstruimos.'},
+    {who:'vale',me:true,text:'Como quemar el mesón, ¿verdad? Bien valiente.'},
+    {who:'chayo',text:'Igualito que Juan Santamaría, mija. A veces lo valiente es no rendirse.'}
+  ]},
+  {type:'decision',prompt:'<b>Hora 0.</b> Detectás el cifrado masivo. ¿Primera reacción?',
+   options:[
+     {text:'Contener: aislar los equipos afectados y cortar la propagación.',outcome:'good',feedback:'¡Correcto! Contener primero evita que el fuego se riegue (función RESPONDER del CSF).'},
+     {text:'Apagar TODO el país de golpe sin plan.',outcome:'bad',feedback:'Apagar a ciegas puede dañar más y perder evidencia.'},
+     {text:'Esperar a ver si se arregla solo.',outcome:'bad',feedback:'¡Jamás! Cada minuto cifra más.'}
+   ]},
+  {type:'decision',prompt:'<b>El dilema.</b> Conti exige el rescate (y lo sube a US$20 millones). ¿Qué recomendás al país?',
+   options:[
+     {text:'No pagar: reconstruir desde respaldos y pedir ayuda internacional.',outcome:'good',feedback:'Esa fue la decisión real de Costa Rica. Pagar no garantiza recuperar y financia al crimen.'},
+     {text:'Pagar rapidito para que todo vuelva.',outcome:'bad',feedback:'Pagar no garantiza nada y anima más ataques. CR no pagó y salió adelante.'}
+   ]},
+  {type:'classify',prompt:'Ubicá cada acción en la <b>función del NIST CSF 2.0</b> correcta.',
+   buckets:[{id:'PR',label:'Proteger',desc:'antes del golpe'},{id:'RS',label:'Responder',desc:'durante el incidente'},{id:'RC',label:'Recuperar',desc:'volver a la normalidad'}],
+   items:[
+     {text:'Tener respaldos fuera de línea listos',bucket:'PR',why:'Prepararse antes es PROTEGER.'},
+     {text:'Aislar los equipos infectados',bucket:'RS',why:'Contener en caliente es RESPONDER.'},
+     {text:'Comunicar a la ciudadanía qué pasó',bucket:'RS',why:'La comunicación del incidente es RESPONDER.'},
+     {text:'Restaurar los sistemas desde respaldos',bucket:'RC',why:'Volver a operar es RECUPERAR.'},
+     {text:'Capacitar al personal contra el phishing',bucket:'PR',why:'Formar de antemano es PROTEGER.'},
+     {text:'Revisar lecciones aprendidas y mejorar',bucket:'RC',why:'Aprender y mejorar cierra el ciclo: RECUPERAR.'}
+   ]},
+  {type:'reflect',kind:'think',prompt:'En una frase: ¿por qué <b>no pagar</b> el rescate fue, a la larga, lo correcto?',placeholder:'Yo creo que no pagar fue correcto porque…',cta:'Guardar mi reflexión'},
+  {type:'award',badge:'m7',points:280,title:'Abril Negro superado',msg:'Reviviste el caso Conti y entendiste la respuesta de un país entero. Como Juan Santamaría: el valor fue no rendirse.',caveat:'Las cifras (US$10M→20M, ~30 instituciones) vienen de la prensa, no de un informe forense oficial.'}
+ ]});
+
+/* ---------- 8 · CCSS / HIVE ---------- */
+MISSIONS.push({id:'m8',num:'08',title:'La Caja sin sistema',loc:'Hospital · CCSS',ic:'🏥',region:'caja',
+ objective:'Entender el impacto humano del ransomware y el valor de la continuidad.',
+ summary:'Mayo 2022: el grupo Hive golpea a la CCSS. El EDUS cae.',
+ steps:[
+  {type:'lesson',teacher:'chayo',title:'Cuando la ciberseguridad toca la salud',
+   lead:'Apenas respirábamos del golpe a Hacienda cuando, el 31 de mayo de 2022, cayó la Caja. El grupo <b>Hive</b> atacó a la CCSS y el EDUS (el expediente digital) se cayó. Aquí la ciberseguridad deja de ser "cosa de compus": es la salud de la gente.',
+   say:{who:'tita',text:'¡Pío! CCSS = Caja Costarricense de Seguro Social; EDUS = Expediente Digital Único en Salud.'},
+   concepts:[
+     {ic:'🖥️',term:'Qué cayó',def:'Más de 800 servidores y miles de equipos; el EDUS fuera de servicio.',example:'Hospitales volvieron al papel.',tico:'Citas a mano, filas eternas.'},
+     {ic:'🧯',term:'Continuidad del negocio',def:'Plan para seguir atendiendo aunque falle la tecnología.',example:'Formularios en papel y digitar después.',tico:'El plan B que salva el día (y vidas).'},
+     {ic:'🧰',term:'Desplegar ≠ tener',def:'Según la prensa, muy pocos equipos tenían el software de protección donado.',example:'La herramienta sin instalar no protege.',tico:'Tener el extintor no sirve si está en la bodega.'}
+   ],
+   acronyms:['CCSS','EDUS'],
+   keypoints:['El ransomware golpeó sobre todo la DISPONIBILIDAD.','La continuidad del negocio permite seguir atendiendo.','Una defensa sin desplegar no protege.'],
+   glossary:['Chunche']},
+  {type:'scene',lines:[
+    {who:'memo',text:'Mae, pero era "solo" la compu de la Caja, ¿tan grave?'},
+    {who:'chayo',text:'¿Solo, Memo? Sin EDUS, el doctor no veía tu expediente. Citas a mano, filas eternas. Eso es la salud de la gente.'},
+    {who:'vale',me:true,text:'Entonces la disponibilidad acá no es un lujo… es que alguien se atienda a tiempo.'},
+    {who:'chayo',text:'Así es. Detrás de cada sistema hay una persona esperando. Por eso hacemos este brete.'},
+    {who:'memo',text:'Upe… ya lo veo distinto.'}
+  ]},
+  {type:'decision',prompt:'Sos jefe de turno y el EDUS está caído. ¿Cómo no parás la atención?',
+   options:[
+     {text:'Activar el plan de continuidad: atender en papel y registrar para digitar después.',outcome:'good',feedback:'¡Correcto! La continuidad permite seguir aunque falle la tecnología.'},
+     {text:'Mandar a todos los pacientes a la casa.',outcome:'bad',feedback:'La salud no espera. Para eso está el plan de continuidad.'}
+   ]},
+  {type:'quiz',prompt:'La protección donada estaba instalada en muy pocos equipos de la Caja. ¿Qué lección deja?',
+   options:[
+     {text:'Tener la herramienta no basta: hay que desplegarla en todos lados.',correct:true,feedback:'¡Exacto! La ejecución importa tanto como la compra.'},
+     {text:'Las herramientas de seguridad no sirven.',correct:false,feedback:'Sí sirven, pero solo si se instalan y usan.'},
+     {text:'Era mejor no tener nada.',correct:false,feedback:'No. El problema fue no desplegarla.'}
+   ]},
+  {type:'quiz',prompt:'¿Qué parte de la tríada CIA se vio más golpeada cuando el EDUS quedó inaccesible?',
+   options:[
+     {text:'Disponibilidad',correct:true,feedback:'¡Sí! Si no se puede abrir el expediente, es disponibilidad.'},
+     {text:'Confidencialidad',correct:false,feedback:'Hubo riesgo de datos, pero lo que paralizó fue la disponibilidad.'},
+     {text:'Ninguno',correct:false,feedback:'Claro que sí: sobre todo la disponibilidad.'}
+   ]},
+  {type:'award',badge:'m8',points:210,title:'Continuidad asegurada',msg:'Entendiste que detrás de cada sistema hay personas. La continuidad salva vidas, no solo datos.'}
+ ]});
+
+/* ---------- 9 · 2024–2026 ---------- */
+MISSIONS.push({id:'m9',num:'09',title:'Temporada 2024–2026',loc:'Sala de inteligencia',ic:'🛰️',region:'intel',
+ objective:'Distinguir ransomware (motivo económico) de ciberespionaje (APT).',
+ summary:'RECOPE, el ICE y otros: la amenaza no se detuvo en 2022.',
+ steps:[
+  {type:'scene',lines:[
+    {who:'conejo',text:'La historia sigue, mae. En el tablero de inteligencia hay casos nuevos. No todos los atacantes quieren lo mismo.'}
+  ]},
+  {type:'lesson',teacher:'conejo',title:'Dos tipos de atacante',
+   lead:'Unos quieren <b>plata</b> rápido y hacen ruido (ransomware). Otros quieren <b>información</b> y se quedan escondidos por mucho tiempo (ciberespionaje, lo que llaman APT). Saber distinguirlos cambia cómo te defendés.',
+   say:{who:'tita',text:'¡Pío! APT = Advanced Persistent Threat, Amenaza Persistente Avanzada: sigilosa y paciente.'},
+   concepts:[
+     {ic:'💰',term:'Ransomware',def:'Secuestra y cobra. Hace ruido: se nota enseguida.',example:'RECOPE 2024 tuvo que operar a mano.',tico:'El ladrón que grita y pide rescate.'},
+     {ic:'🕵️',term:'Ciberespionaje (APT)',def:'Roba información en silencio, por meses.',example:'El caso del ICE 2026 (extracción de correos).',tico:'El espía que susurra y no se va.'},
+     {ic:'❓',term:'Atribución',def:'Decir "quién fue". Casi siempre es una hipótesis, no un hecho cerrado.',example:'Gobiernos señalan a un actor; el señalado lo niega.',tico:'Hay que decir "presunto", con cuidado.'}
+   ],
+   acronyms:['APT','RECOPE','ICE'],
+   keypoints:['Ransomware = dinero y ruido.','APT = información y silencio.','La atribución se presenta como ALEGADA, no como hecho probado.'],
+   glossary:[]},
+  {type:'scene',lines:[
+    {who:'memo',text:'Mae, ¿y cómo sé si es un ransomware o uno de esos espías APT?'},
+    {who:'conejo',text:'Preguntate: ¿hace ruido y pide plata, o está calladito robando info por meses?'},
+    {who:'vale',me:true,text:'El ransomware es el que grita "¡pagame!"; el APT es el carterista que ni sentís.'},
+    {who:'conejo',text:'¡Tal cual! Y ojo, Memo: cuando digan "fue tal país", casi siempre es "presunto". Señalar con certeza no es tan fácil.'},
+    {who:'memo',text:'Diay, entonces hay que hablar con cuidado.'}
+  ]},
+  {type:'quiz',prompt:'Noviembre 2024: un ransomware golpea a <b>RECOPE</b> y la obliga a operar a mano. Según reportes, entró por…',
+   options:[
+     {text:'Un correo de phishing.',correct:true,feedback:'Correcto, según lo reportado. El phishing sigue siendo la puerta #1.'},
+     {text:'Un terremoto.',correct:false,feedback:'No; fue un ciberataque, reportado como phishing.'},
+     {text:'Falta de gasolina.',correct:false,feedback:'Al revés: el ataque afectó la operación del combustible.'}
+   ]},
+  {type:'classify',prompt:'Clasificá cada caso según su naturaleza probable.',
+   buckets:[{id:'RW',label:'Ransomware',desc:'secuestro por dinero'},{id:'APT',label:'Ciberespionaje',desc:'robo silencioso'}],
+   items:[
+     {text:'RECOPE 2024: sistemas cifrados y rescate',bucket:'RW',why:'Cifrado + rescate = ransomware.'},
+     {text:'ICE 2026: extracción silenciosa de ~9 GB de correos',bucket:'APT',why:'Robo sigiloso de info = ciberespionaje.'},
+     {text:'Hacienda 2022 (Conti): cifrado + rescate + filtración',bucket:'RW',why:'Conti fue ransomware con extorsión.'},
+     {text:'Intrusión que se mantiene meses solo copiando datos',bucket:'APT',why:'Persistencia silenciosa = espionaje.'}
+   ]},
+  {type:'quiz',prompt:'Sobre el caso del <b>ICE (2026)</b>, ¿cómo se debe presentar la atribución a un actor ligado a China?',
+   options:[
+     {text:'Como una atribución ALEGADA por el gobierno; la parte señalada la rechaza.',correct:true,feedback:'¡Correcto! En inteligencia la atribución casi siempre es hipótesis: se dice "presunto".'},
+     {text:'Como un hecho 100% probado.',correct:false,feedback:'Cuidado: la hizo el gobierno y fue rechazada. Se presenta como alegada.'},
+     {text:'No decir nada.',correct:false,feedback:'Se informa, pero con precisión: "presunto".'}
+   ],note:'Rigor del CRT: la atribución del caso ICE es del Gobierno de CR; China la rechazó. Preséntala como presunta.'},
+  {type:'award',badge:'m9',points:220,title:'Analista de inteligencia',msg:'Ya distinguís al ladrón que grita (ransomware) del espía que susurra (APT), y manejás la atribución con cuidado.'}
+ ]});
+
+/* ---------- 10 · ESTAFAS SINPE ---------- */
+MISSIONS.push({id:'m10',num:'10',title:'Estafas en la calle',loc:'Feria del agricultor',ic:'📵',region:'calle',
+ objective:'Reconocer las señales del vishing y el smishing, y responder sin caer.',
+ summary:'SINPE Móvil, comprobantes falsos y el "falso funcionario del banco".',
+ steps:[
+  {type:'scene',lines:[
+    {who:'conejo',text:'Esta es la amenaza más cercana a tu familia, mae. Las estafas por teléfono y SINPE Móvil se dispararon en Costa Rica.'},
+    {who:'memo',text:'A mí casi me agarran una vez… por dicha colgué. Aprendé de mi susto.'}
+  ]},
+  {type:'lesson',teacher:'conejo',title:'Las trampas del día a día',
+   lead:'No todos los ataques son de película. Los que más pegan en CR son por teléfono y mensaje. Conocé los nombres y las señales:',
+   say:{who:'tita',text:'¡Pío! SINPE = Sistema Nacional de Pagos Electrónicos; OTP = contraseña de un solo uso (el "codiguito").'},
+   concepts:[
+     {ic:'📞',term:'Vishing',def:'Phishing por llamada de voz.',example:'"Le hablo del banco, dicteme el código".',tico:'El falso funcionario que suena muy serio.'},
+     {ic:'💬',term:'Smishing',def:'Phishing por SMS o mensaje.',example:'"Su paquete está retenido, pague aquí".',tico:'El mensajito con link apurado.'},
+     {ic:'🧾',term:'Comprobante falso',def:'Te muestran una pantalla de pago que no es real.',example:'En la feria, un "SINPE" que a vos no te llegó.',tico:'Esperá la notificación de TU banco.'},
+     {ic:'🔑',term:'El código es la llave',def:'El OTP abre tu cuenta. El banco NUNCA lo pide.',example:'Si lo dictás, les abrís la puerta.',tico:'El codiguito no se dicta ni a tu tía.'}
+   ],
+   acronyms:['SINPE','OTP','MFA'],
+   keypoints:['El banco NUNCA pide tu código (OTP) por teléfono.','Esperá la notificación de TU banco antes de entregar algo.','Que sepan tu nombre NO prueba que sean el banco.','¿Dudás? Colgá y llamá al número oficial de tu tarjeta.'],
+   glossary:['Vishing','Phishing']},
+  {type:'scene',lines:[
+    {who:'memo',text:'Al chile, a mí casi me agarran. Me llamó un "del banco" bien serio pidiendo el codiguito.'},
+    {who:'vale',me:true,text:'¡Ni se te ocurra dictarlo, Memo! Ese código es la llave de tu cuenta.'},
+    {who:'memo',text:'Por dicha colgué… pero sabía mi nombre y mi banco, ¡me asustó!'},
+    {who:'conejo',text:'Que sepan tu nombre no los hace el banco, Memo. Esos datos se filtran y se venden. ¿Dudás? Colgá y llamá al número de tu tarjeta.'},
+    {who:'memo',text:'Tuanis. Ya mismo le aviso a mi mamá y a mi abuela.'}
+  ]},
+  {type:'decision',prompt:'📱 En la feria, un cliente te muestra un "comprobante" SINPE por ₡15.000, pero a vos no te ha llegado nada. ¿Qué hacés?',
+   options:[
+     {text:'Esperar la notificación de MI banco antes de entregar el producto.',outcome:'good',feedback:'¡Tuanis! La pantalla del otro se puede falsificar. Vale TU notificación.'},
+     {text:'Entregar, el comprobante se ve real.',outcome:'bad',feedback:'¡Sala! Esa es la estafa del comprobante falso.'}
+   ]},
+  {type:'decision',prompt:'☎️ Te llaman: "Le hablo del banco. Para anular un movimiento raro, dicteme el código que le llegó por SMS". ¿Qué hacés?',
+   options:[
+     {text:'Colgar. El banco NUNCA pide ese código. Luego llamo al número oficial de mi tarjeta.',outcome:'good',feedback:'¡Perfecto! Eso es vishing. El código es la llave de tu cuenta.'},
+     {text:'Dictar el código para "proteger" mi cuenta.',outcome:'bad',feedback:'¡No, mae! Ese es tu OTP. Si lo dictás, les abrís la puerta.'}
+   ]},
+  {type:'quiz',prompt:'El estafador ya sabe tu nombre y tu banco. ¿Qué significa?',
+   options:[
+     {text:'Que tus datos pudieron filtrarse o venderse; saberlo NO prueba que sea el banco.',correct:true,feedback:'¡Exacto! Que te conozcan no los hace legítimos.'},
+     {text:'Que de seguro es el banco real.',correct:false,feedback:'Para nada; los datos se filtran y venden.'},
+     {text:'Que hay que confiar de una vez.',correct:false,feedback:'Al contrario: señal para desconfiar más.'}
+   ]},
+  {type:'award',badge:'m10',points:220,title:'Blindado contra estafas',msg:'Ya podés proteger a tu abuela, a tu mamá y a vos. Estas son las amenazas del día a día tico.'}
+ ]});
+
+/* ---------- 11 · LABORATORIO CTF ---------- */
+MISSIONS.push({id:'m11',num:'11',title:'Laboratorio CTF: Banco Pura Vida',loc:'Laboratorio Picado',ic:'🎣',region:'lab',isCTF:true,
+ objective:'Seguir el ciclo completo de un phishing —paso a paso— y capturar 6 banderas, defendiéndote al final.',
+ summary:'El reto estrella. Todo pasa dentro de un escritorio simulado. Nada es real.',
+ steps:[
+  {type:'scene',lines:[
+    {who:'picado',text:'Bienvenida de nuevo al laboratorio. Aquí estudiamos el "veneno" para fabricar el antídoto, como Clorito Picado con las serpientes.'},
+    {who:'picado',text:'<b>Regla de oro:</b> todo esto es una simulación. "Banco Pura Vida" es inventado, los dominios terminan en <span class="mono">.test</span> (no existen en Internet) y nada de lo que escribás sale de tu navegador.'}
+  ]},
+  {type:'lesson',teacher:'picado',title:'Cómo funciona un phishing, paso a paso',
+   lead:'Un ataque de phishing casi siempre sigue el mismo camino. Si conocés las etapas, podés cortarlo en cualquiera de ellas. Vas a vivir cada una y capturar una bandera (formato <span class="mono">PURAVIDA{...}</span>).',
+   say:{who:'tita',text:'¡Pío! CTF = Capture The Flag, "captura la bandera". OTP = el codiguito de un solo uso.'},
+   concepts:[
+     {ic:'🎣',term:'1. El anzuelo',def:'Llega un correo o mensaje con urgencia y un enlace.',example:'"Su SINPE será suspendido en 2 horas".',tico:'La prisa es la trampa.'},
+     {ic:'🖱️',term:'2. El clic',def:'Te lleva a una página falsa parecida a la real.',example:'bancopuravlda.test (con "l" en vez de "i").',tico:'El candado no garantiza confianza.'},
+     {ic:'🎭',term:'3. El robo',def:'Escribís tus datos y el atacante los captura.',example:'Y hasta te llama por el código (vishing).',tico:'El codiguito NUNCA se dicta.'},
+     {ic:'🛡️',term:'4. La defensa',def:'Cortar, avisar al banco, cambiar clave, denunciar.',example:'Responder en orden salva la cuenta.',tico:'Rápido y ordenado.'}
+   ],
+   acronyms:['CTF','OTP','HTTPS'],
+   keypoints:['La urgencia es la señal #1 de phishing.','El candado (HTTPS) solo cifra; no garantiza que el sitio sea real.','El OTP es tu llave: nunca se dicta.','Si alguien cae: cortar, avisar al banco, asegurar la cuenta, denunciar.'],
+   glossary:['Bandera / Flag','Typosquatting','Vishing']},
+  {type:'scene',lines:[
+    {who:'picado',text:'Vale, acordate: acá estudiamos el veneno para hacer el antídoto. Todo es simuladito, nada real.'},
+    {who:'vale',me:true,text:'Entonces voy a "caer" a propósito para ver cómo lo hacen, ¿verdad?'},
+    {who:'picado',text:'Exacto. Mirá cada paso con lupa. Si entendés cómo te enganchan, no caés en la vida real.'},
+    {who:'vale',me:true,text:'Pura vida. A cazar banderas, doctora.'}
+  ]},
+  {type:'inspect',title:'Bandera 1 · La bandeja',
+   intro:'Llegó este correo a tu <b>TicoMail</b>. Antes de dar clic, inspeccioná. Tocá lo marcado y abrí los encabezados.',
+   from:'"Banco Pura Vida - Seguridad" &lt;alertas@bancopuravida-seguridad.test&gt;',
+   fromSuspect:'bancopuravida-seguridad.test',fromNote:'El banco (ficticio) usaría bancopuravida.test, no "-seguridad". Dominio sospechoso.',
+   subject:'⚠ Su SINPE Móvil será SUSPENDIDO en 2 horas',
+   linkText:'Reactivar mi SINPE Móvil',linkUrl:'http://bancopuravlda.test/login',linkNote:'¡Ojo! bancopuravlda.test tiene una "l" donde va la "i": typosquatting.',
+   body:'Estimado cliente:<br><br>Detectamos actividad inusual. Su SINPE Móvil será <b>suspendido en 2 horas</b> si no verifica su identidad. Haga clic abajo para reactivarlo de inmediato.',
+   headers:'Return-Path: &lt;coyote@los-coyotes.test&gt;\nReceived: from mail.los-coyotes.test (unknown [45.77.x.x])\nFrom: "Banco Pura Vida - Seguridad" &lt;alertas@bancopuravida-seguridad.test&gt;\nReply-To: cobros@los-coyotes.test\nSubject: Su SINPE Movil sera SUSPENDIDO en 2 horas\nX-Mailer: PhishKit (simulado)',
+   headerFlag:'coyote@los-coyotes.test',
+   flagPrompt:'El <b>Return-Path</b> revela de dónde viene de verdad. Escribí la dirección completa que aparece ahí:',
+   flag:'PURAVIDA{return_path_delata_al_coyote}',
+   hints:[{cost:0,text:'Lo que ves no es lo que es. El "From" se puede falsear; el Return-Path no tanto.'},{cost:10,text:'Abrí "Ver encabezados" y buscá la línea Return-Path.'},{cost:25,text:'El Return-Path dice coyote@los-coyotes.test.'}],
+   validate:v=>v.includes('coyote@los-coyotes.test')},
+  {type:'browser',title:'Bandera 2 · El clic',
+   intro:'Diste clic (en el laboratorio). Se abrió esta página. Fijate en la barra de dirección antes de escribir nada.',
+   url:'https://bancopuravlda.test/login',realUrl:'bancopuravida.test',
+   lockNote:'El candado 🔒 solo dice que la conexión va cifrada (HTTPS). <b>No</b> garantiza que el sitio sea legítimo: un sitio falso también puede tener candado.',
+   util:{user:'vale.mora',pass:'Tuanis2026!'},flag:'PURAVIDA{el_candado_no_garantiza_confianza}',
+   warn:'Nunca escribás una contraseña REAL aquí. Usá las credenciales de utilería que te damos.'},
+  {type:'coyote',title:'Bandera 3 · Detrás del telón',
+   intro:'Mirá lo que pasa "del otro lado" cuando alguien cae. Es una dramatización: no se captura nada real.',
+   decisionPrompt:'El atacante intenta entrar a tu banco y este pide un <b>código OTP</b> por SMS. "Coyote" te llama: <i>"Diay, le llegó un codiguito para anular la transacción, ¿me lo dicta?"</i>',
+   options:[{text:'Colgar. Jamás dicto un código que me llega por SMS.',outcome:'good',feedback:'¡Correcto! Sin el OTP, el atacante queda afuera aunque tenga tu clave.'},{text:'Dictar el código para "anular".',outcome:'bad',feedback:'En la vida real eso completa el robo. Por suerte esto es un laboratorio. Nunca se dicta.'}],
+   flag:'PURAVIDA{nunca_dictes_tu_codigo_otp}'},
+  {type:'viewsource',title:'Bandera 4 · El investigador',
+   intro:'Como analista, abrís "Ver código fuente" de la página falsa. Los atacantes a veces dejan comentarios. Encontrá el texto escondido y decodificalo con el "Decodificador de Doña Chayo".',
+   flag:'PURAVIDA{kit_de_phishing_desenmascarado}',
+   hints:[{cost:0,text:'Buscá un comentario HTML (&lt;!-- ... --&gt;) con texto raro en Base64.'},{cost:15,text:'Copiá ese texto y pegalo en el decodificador.'}]},
+  {type:'order',title:'Bandera 5a · Responder como tico pro',
+   prompt:'Alguien de tu familia cayó. Ordená las acciones de respuesta en la secuencia correcta.',
+   items:[{id:'colgar',label:'No dictar más códigos y colgar'},{id:'banco',label:'Llamar al banco al número oficial de la tarjeta'},{id:'clave',label:'Cambiar la clave y activar MFA'},{id:'sinpe',label:'Bloquear SINPE Móvil y bajar los límites'},{id:'oij',label:'Denunciar ante el OIJ'},{id:'avisar',label:'Avisar a contactos y reportar el correo'}],
+   correctOrder:['colgar','banco','clave','sinpe','oij','avisar'],
+   whyRight:'Primero cortás (colgar), avisás al banco por el canal oficial, asegurás la cuenta (clave + MFA), limitás el SINPE, denunciás al OIJ y por último avisás y reportás.',
+   flag:'PURAVIDA{respuesta_ordenada_salva_la_cuenta}'},
+  {type:'phishornot',title:'Bandera 5b (bonus) · Phish o legítimo',
+   intro:'Último reto. Decidí: ¿phishing o legítimo? Nivel difícil: pocas pistas y una historia muy creíble.',
+   cases:[
+     {meta:'De: Correos de Tiquicia &lt;aviso@correos-tiquicia-track.test&gt; · Asunto: Su paquete está retenido',text:'"Su paquete tiene un pendiente de ₡1.500 de aduanas. Pague aquí en 24h o será devuelto: correos-tiquicia-track.test/pago"',phish:true,why:'Dominio raro (-track.test), cobro pequeño urgente y enlace de pago. Smishing clásico. ¡Phishing!'},
+     {meta:'Notificación dentro de tu app bancaria (sin enlaces)',text:'"Realizaste una compra de ₡8.900 en Súper La Pulpe. Si no la reconocés, abrí la sección Seguridad dentro de la app."',phish:false,why:'Llega dentro de la app oficial, sin pedir datos ni enlaces externos. Legítimo.'}
+   ],
+   flag:'PURAVIDA{ojo_de_cazador_entrenado}'},
+  {type:'award',badge:'m11',points:420,title:'¡Cazador CTF graduado!',msg:'Capturaste las 6 banderas: viste cómo engañan, cómo roban y —lo más importante— cómo cortar el ataque. Esto es concientización de verdad.',caveat:'Recordá: todo fue simulado. Usar esto contra personas o sistemas reales sin permiso es delito (Ley 9048).'}
+ ]});
+
+/* ---------- 12 · JEFE FINAL ---------- */
+MISSIONS.push({id:'m12',num:'12',title:'El jefe final: Coyote',loc:'Data center · Guanacaste',ic:'🏆',region:'boss',
+ objective:'Aplicar todo lo aprendido en un incidente nuevo.',
+ summary:'Los Coyotes atacan el "Ministerio de la Plata". La prueba final.',
+ steps:[
+  {type:'scene',lines:[
+    {who:'coyote',text:'Jajaja. Soy Tío Coyote. Creíste que ibas a aprender y ya. Tengo un último golpe contra el Ministerio de la Plata.'},
+    {who:'comadreja',text:'Y yo, La Comadreja, le preparé unos correos trampa bien bonitos.'},
+    {who:'vale',me:true,text:'Suave, Coyotes. Ya les conozco todos los trucos.'},
+    {who:'chayo',text:'Dale, mija. Esta es la final. Demostrá todo. ¡Pura vida!'}
+  ]},
+  {type:'lesson',teacher:'quiros',title:'Repaso rápido antes de la final',
+   lead:'Esto es todo lo que aprendiste, en cuatro ideas. Llevalas a la batalla contra los Coyotes:',
+   concepts:[
+     {ic:'🧠',term:'El humano es el blanco',def:'La mayoría de ataques empiezan engañando a una persona.',example:'Phishing, vishing, ingeniería social.',tico:'Pensá antes de dar clic o dictar nada.'},
+     {ic:'🔐',term:'MFA y confianza cero',def:'Una clave sola no basta; verificá siempre.',example:'Las passkeys ni se dictan.',tico:'Aunque estés "adentro", te vuelven a pedir el pase.'},
+     {ic:'🗺️',term:'NIST CSF 2.0',def:'El mapa: gobernar, identificar, proteger, detectar, responder, recuperar.',example:'Organiza toda la defensa.',tico:'La guía de vuelo del país.'},
+     {ic:'🚫',term:'No pagar, sí reportar',def:'Ante ransomware: contener, restaurar, avisar.',example:'Como hizo Costa Rica en 2022.',tico:'Pagar financia el crimen y no garantiza nada.'}
+   ],
+   acronyms:['MFA','ZTA','NIST','CSF','CSIRT','OIJ'],
+   keypoints:['El eslabón más atacado somos las personas.','MFA + confianza cero frenan la clave robada.','Ante ransomware: no pagar, contener y reportar (CSIRT-CR, OIJ).'],
+   glossary:[]},
+  {type:'scene',lines:[
+    {who:'coyote',text:'Jajaja, pasante. Todo eso que estudiaste no te va a servir contra mí.'},
+    {who:'vale',me:true,text:'Suave, Coyote. Ya sé que vas a intentar engañar a una persona, no a una máquina.'},
+    {who:'chayo',text:'Respirá, mija. Acordate: MFA, no pagar, reportar, y pensar antes de dar clic.'},
+    {who:'vale',me:true,text:'Listo. Vení, Coyote, que esta vez el del cuento sos vos.'}
+  ]},
+  {type:'quiz',prompt:'🔥 Coyote escribe fingiendo ser "soporte de TI" y pide la clave. ¿Qué ataque es y qué explota?',
+   options:[
+     {text:'Ingeniería social / phishing; explota a la persona, no a la máquina.',correct:true,feedback:'¡Correcto! El eslabón más atacado somos las personas.'},
+     {text:'Un terremoto de red.',correct:false,feedback:'No existe eso. Es ingeniería social.'},
+     {text:'Un error del antivirus.',correct:false,feedback:'No; es manipulación de la persona.'}
+   ]},
+  {type:'quiz',prompt:'🔥 Para que una clave robada NO le sirva a Coyote, el control #1 es…',
+   options:[
+     {text:'MFA resistente a phishing (ojalá passkeys).',correct:true,feedback:'¡Sí! Con MFA, la clave sola no basta.'},
+     {text:'Cambiar el fondo de pantalla.',correct:false,feedback:'Jaja, no. La MFA es la respuesta.'},
+     {text:'Apagar la máquina para siempre.',correct:false,feedback:'Eso mata la disponibilidad. Respuesta: MFA.'}
+   ]},
+  {type:'quiz',prompt:'🔥 ¿Qué marco usa el Ministerio para organizar TODA su defensa (gobernar, identificar, proteger, detectar, responder, recuperar)?',
+   options:[
+     {text:'NIST CSF 2.0',correct:true,feedback:'¡La columna vertebral! Seis funciones, un mapa.'},
+     {text:'Solo el OWASP Top 10.',correct:false,feedback:'OWASP cubre apps web; no es el marco general.'},
+     {text:'Ninguno, improvisar.',correct:false,feedback:'Improvisar es lo que quiere Coyote.'}
+   ]},
+  {type:'decision',prompt:'🔥 Coyote cifra unos equipos y exige rescate. Como asesora, recomendás…',
+   options:[
+     {text:'No pagar, contener, restaurar desde respaldos y avisar al CSIRT-CR y al OIJ.',outcome:'good',feedback:'¡Jaque mate a Coyote! Esa es la jugada que aprendió Costa Rica.'},
+     {text:'Pagar en secreto y no decir nada.',outcome:'bad',feedback:'Eso financia el crimen y no garantiza nada. Correcto: no pagar y reportar.'}
+   ]},
+  {type:'decision',prompt:'🔥 <b>Golpe final.</b> Coyote llama fingiendo ser del CSIRT: "Dicteme su token de administrador para ayudarle". ¿Qué hacés?',
+   options:[
+     {text:'Colgar y verificar por el canal oficial. Nadie legítimo pide tu token así.',outcome:'good',feedback:'¡Ganaste, mae! Reconociste la ingeniería social hasta el último segundo.'},
+     {text:'Dictar el token para que "ayude".',outcome:'bad',feedback:'¡Era Coyote otra vez! Nunca se dicta un token ni una clave, venga de quien venga.'}
+   ]},
+  {type:'award',badge:'m12',points:500,title:'🏆 ¡Coyote derrotado!',msg:'Protegiste al Ministerio de la Plata con todo lo aprendido. De pasante a defensora del país. ¡Pura vida, agente!'}
+ ]});
+
+/* ===== NAVEGACIÓN ===== */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id==='scr-'+id));window.scrollTo({top:0,behavior:'smooth'});}
+function missionIndex(id){return MISSIONS.findIndex(m=>m.id===id);}
+function doneCount(){return MISSIONS.filter(m=>S.missions[m.id]&&S.missions[m.id].done).length;}
+function allDone(){return doneCount()===MISSIONS.length;}
+function award(n){S.points+=n;save();refreshHUD();}
+
+function refreshHUD(){$('#hud').hidden=!S.started;$('#hudPoints').textContent=S.points;$('#hudProg').textContent=doneCount()+'/'+MISSIONS.length;}
+
+/* ===== MAPA (acceso libre) ===== */
+function renderMap(){
+  const grid=$('#missionGrid');grid.innerHTML='';
+  MISSIONS.forEach(m=>{
+    const st=S.missions[m.id];const done=st&&st.done;
+    const card=el('button','mcard'+(done?' done':''));
+    card.style.setProperty('--region',REGION[m.region]||'#2fd6b4');
+    card.innerHTML=`${done?'<span class="stamp">★ LISTO</span>':''}
+      <div class="row"><span class="num">${m.num}</span><span class="ic">${m.ic}</span></div>
+      <h3>${m.title}</h3><div class="loc">📍 ${m.loc}</div><p>${m.summary}</p>
+      <div class="foot"><span class="tag ${done?'good':''}">${done?'✓ completada':'▸ jugar'}</span>${done?`<span class="tag gold">₡${st.points||0}</span>`:''}</div>`;
+    card.addEventListener('click',()=>openMission(m.id));
+    grid.appendChild(card);
+  });
+  const dc=doneCount(),total=MISSIONS.length;
+  $('#mapProgFill').style.width=(dc/total*100)+'%';
+  $('#mapProgTxt').textContent=dc+' de '+total;
+  $('#mapRep').textContent='₡'+S.points+' rep';
+  $('#goCert').hidden=!allDone();
+  $('#mapGreeting').textContent=dc===0?`¡Pura vida, ${S.alias}! Entrá a la que querás; te recomiendo empezar por la 00.`:
+    allDone()?`¡Lo lograste todo, ${S.alias}! Ya podés ver tu certificado 🎓`:
+    `Vas ${dc}/${total}, ${S.alias}. Seguí cuando querás, en el orden que querás.`;
+}
+
+/* ===== RUNNER DE MISIÓN ===== */
+let RUN=null;
+function openMission(id){const m=MISSIONS[missionIndex(id)];RUN={mission:m,stepIdx:0,flags:[],hintsUsed:0,correctFirst:0,answered:0};show('mission');renderMissionShell();renderStep();}
+function renderMissionShell(){
+  const m=RUN.mission;
+  $('#missionView').innerHTML=`<button class="mback" id="mBack">◂ Volver al mapa</button>
+    <div class="mtitle"><div class="badge-ic" style="--region:${REGION[m.region]}">${m.ic}</div>
+      <div><h2>Misión ${m.num} · ${m.title}</h2><div class="loc">📍 ${m.loc}</div></div></div>
+    <div class="objective"><b>🎯 Objetivo</b>${m.objective}</div>
+    <div class="steps-nav" id="stepsNav"></div><div id="stepHost"></div>`;
+  $('#mBack').addEventListener('click',()=>{show('map');renderMap();});
+}
+function renderStepsNav(){const nav=$('#stepsNav');if(!nav)return;nav.innerHTML='';RUN.mission.steps.forEach((s,i)=>{if(s.type==='award')return;nav.appendChild(el('div','sdot'+(i<RUN.stepIdx?' done':i===RUN.stepIdx?' cur':'')));});}
+function nextStep(){RUN.stepIdx++;const step=RUN.mission.steps[RUN.stepIdx];if(!step||step.type==='award'){finishMission();return;}renderStep();}
+function renderStep(){const step=RUN.mission.steps[RUN.stepIdx];const host=$('#stepHost');host.innerHTML='';renderStepsNav();window.scrollTo({top:0,behavior:'smooth'});const fn=STEP[step.type];if(fn)fn(step,host);else{host.appendChild(el('div','panel','Paso no disponible.'));advanceBtn(host);}}
+function advanceBtn(host,label){const a=el('div','actions');const b=el('button','btn primary',(label||'Continuar')+' ▸');b.addEventListener('click',nextStep);a.appendChild(b);host.appendChild(a);}
+function stepGlossary(step){(step.glossary||[]).forEach(unlockGlossary);}
+function countChallenges(m){return m.steps.filter(s=>['quiz','decision','classify','order','reflect','inspect','browser','coyote','viewsource','phishornot'].includes(s.type)).length;}
+
+const STEP={};
+
+/* scene */
+STEP.scene=(step,host)=>{
+  const panel=el('div','panel');panel.appendChild(el('div','steplabel','◆ Historia'));
+  const vn=el('div','vn');panel.appendChild(vn);host.appendChild(panel);
+  let i=0;
+  const addLine=()=>{
+    if(i>=step.lines.length){advanceBtn(host,RUN.stepIdx===0?'Empezar':'Seguir');return;}
+    const ln=step.lines[i++];const c=CHARS[ln.who]||CHARS.narr;
+    const row=el('div','dlg'+(ln.me?' me':'')+(ln.who==='narr'?' narr':''));
+    row.innerHTML=`<div class="avatar">${c.ic}</div><div class="bubble">${ln.who!=='narr'?`<div class="who">${c.name}${c.role?`<span class="role">${c.role}</span>`:''}</div>`:''}<p>${ln.text}</p></div>`;
+    vn.appendChild(row);
+    if(i<step.lines.length){const a=el('div','actions');const b=el('button','btn ghost sm','▾ Seguir');b.addEventListener('click',()=>{a.remove();addLine();});a.appendChild(b);panel.appendChild(a);}
+    else addLine();
+    window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  };
+  addLine();
+};
+
+/* lesson */
+STEP.lesson=(step,host)=>{
+  stepGlossary(step);
+  const panel=el('div','panel');
+  panel.appendChild(el('div','steplabel','📚 Lección'));
+  panel.appendChild(el('h3',null,step.title));
+  if(step.say){const c=CHARS[step.say.who]||CHARS.quiros;const t=el('div','teachin');t.innerHTML=`<div class="av">${c.ic}</div><div class="tx"><b>${c.name}:</b> ${step.say.text}</div>`;panel.appendChild(t);}
+  if(step.lead)panel.appendChild(el('div','lead',step.lead));
+  if(step.concepts){const g=el('div','concepts');step.concepts.forEach(cc=>{
+    const card=el('div','concept');
+    card.innerHTML=`<div class="ch"><span class="ci">${cc.ic||'•'}</span><h4>${cc.term}</h4></div><div class="cd">${cc.def}</div>${cc.example?`<div class="ex"><span class="xl">Ejemplo</span>${cc.example}</div>`:''}${cc.tico?`<div class="tico">🇨🇷 ${cc.tico}</div>`:''}`;
+    g.appendChild(card);});panel.appendChild(g);}
+  if(step.acronyms&&step.acronyms.length){
+    const box=el('div','acrobox');box.appendChild(el('h4',null,'🔤 Decodificador de siglas'));
+    const list=el('div','acrolist');
+    step.acronyms.forEach(a=>{const d=ACR[a];if(d){const row=el('div','acro');row.innerHTML=`<b>${a}</b>${d}`;list.appendChild(row);}});
+    box.appendChild(list);panel.appendChild(box);
+  }
+  if(step.keypoints&&step.keypoints.length){
+    const kp=el('div','keypts');kp.appendChild(el('h4',null,'✅ Para recordar'));
+    const ul=el('ul');step.keypoints.forEach(k=>{const li=el('li');li.innerHTML=k;ul.appendChild(li);});kp.appendChild(ul);panel.appendChild(kp);
+  }
+  host.appendChild(panel);
+  advanceBtn(host,'¡Entendido! A las preguntas');
+};
+
+/* quiz */
+STEP.quiz=(step,host)=>{
+  stepGlossary(step);
+  const panel=el('div','panel');panel.appendChild(el('div','steplabel','◆ Reto'));panel.appendChild(el('div','prompt',step.prompt));
+  const opts=el('div','opts');panel.appendChild(opts);const fb=el('div','feedback');let solved=false,hadWrong=false;
+  step.options.forEach((o,idx)=>{
+    const b=el('button','opt');b.innerHTML=`<span class="mk">${String.fromCharCode(65+idx)}</span><span>${o.text}</span>`;
+    b.addEventListener('click',()=>{
+      if(solved||b.classList.contains('wrong'))return;
+      if(o.correct){solved=true;RUN.answered++;b.classList.add('correct');opts.querySelectorAll('.opt').forEach(x=>x.classList.add('disabled'));if(!hadWrong)RUN.correctFirst++;fb.className='feedback ok show';fb.innerHTML='<b>¡Correcto! '+pick(['Tuanis.','Qué chiva.','Pura vida.','Al chile, bien.'])+'</b>'+o.feedback;if(step.note)fb.innerHTML+=`<div class="hintbox" style="margin-top:10px"><span class="pix">Nota del CRT</span>${step.note}</div>`;award(15);advanceBtn(host);}
+      else{hadWrong=true;b.classList.add('wrong');b.classList.add('disabled');fb.className='feedback no show';fb.innerHTML='<b>Esa no, mae.</b>'+o.feedback+'<br><br>Probá otra: no se puede seguir hasta acertar.';}
+    });
+    opts.appendChild(b);
+  });
+  panel.appendChild(fb);host.appendChild(panel);
+};
+
+/* decision */
+STEP.decision=(step,host)=>{
+  stepGlossary(step);
+  const panel=el('div','panel');panel.appendChild(el('div','steplabel','◆ Decisión'));panel.appendChild(el('div','prompt',step.prompt));
+  const opts=el('div','opts');panel.appendChild(opts);const fb=el('div','feedback');let solved=false,hadWrong=false;
+  step.options.forEach((o,idx)=>{
+    const b=el('button','opt');b.innerHTML=`<span class="mk">${String.fromCharCode(65+idx)}</span><span>${o.text}</span>`;
+    b.addEventListener('click',()=>{
+      if(solved||b.classList.contains('wrong'))return;
+      if(o.outcome==='good'){solved=true;RUN.answered++;b.classList.add('correct');opts.querySelectorAll('.opt').forEach(x=>x.classList.add('disabled'));if(!hadWrong)RUN.correctFirst++;fb.className='feedback ok show';fb.innerHTML='<b>¡Buena decisión!</b>'+o.feedback;award(18);advanceBtn(host);}
+      else{hadWrong=true;b.classList.add('wrong');b.classList.add('disabled');fb.className='feedback no show';fb.innerHTML='<b>Esa no era…</b>'+o.feedback+'<br><br>Pensalo bien y elegí de nuevo: no se sigue hasta dar con la correcta.';}
+    });
+    opts.appendChild(b);
+  });
+  panel.appendChild(fb);host.appendChild(panel);
+};
+
+/* classify */
+STEP.classify=(step,host)=>{
+  stepGlossary(step);
+  const panel=el('div','panel');panel.appendChild(el('div','steplabel','◆ Clasificá'));panel.appendChild(el('div','prompt',step.prompt));
+  const pool=el('div','pool');const buckets=el('div','buckets');panel.appendChild(pool);panel.appendChild(buckets);
+  const fb=el('div','feedback');panel.appendChild(fb);host.appendChild(panel);
+  let active=null;const placed={};
+  shuffle(step.items.map((it,ix)=>({...it,ix}))).forEach(it=>{
+    const c=el('button','chipitem',it.text);c.dataset.ix=it.ix;
+    c.addEventListener('click',()=>{if(c.classList.contains('placed'))return;pool.querySelectorAll('.chipitem').forEach(x=>x.classList.remove('active'));if(active===c){active=null;buckets.querySelectorAll('.bucket').forEach(b=>b.classList.remove('hot'));return;}active=c;c.classList.add('active');buckets.querySelectorAll('.bucket').forEach(b=>b.classList.add('hot'));});
+    pool.appendChild(c);
+  });
+  step.buckets.forEach(bk=>{
+    const b=el('div','bucket');b.innerHTML=`<h4>${bk.label}</h4><div class="desc">${bk.desc}</div><div class="drop"></div>`;
+    b.addEventListener('click',()=>{if(!active)return;const ix=+active.dataset.ix;placed[ix]=bk.id;b.querySelector('.drop').appendChild(el('div','dropped',step.items[ix].text));active.classList.add('placed');active.classList.remove('active');active=null;buckets.querySelectorAll('.bucket').forEach(x=>x.classList.remove('hot'));if(Object.keys(placed).length===step.items.length)showCheck();});
+    buckets.appendChild(b);
+  });
+  function showCheck(){
+    if(panel._checkShown)return;panel._checkShown=true;
+    let hadWrong=false;
+    const a=el('div','actions');const b=el('button','btn primary','Revisar ✓');
+    b.addEventListener('click',()=>{
+      let ok=0;const wrong=[];buckets.querySelectorAll('.dropped').forEach(d=>d.remove());
+      step.items.forEach((item,ix)=>{
+        if(placed[ix]==null)return;
+        if(placed[ix]===item.bucket){ok++;const bi=step.buckets.findIndex(x=>x.id===placed[ix]);buckets.children[bi].querySelector('.drop').appendChild(el('div','dropped ok','✓ '+item.text));}
+        else wrong.push(ix);
+      });
+      if(wrong.length===0&&ok===step.items.length){
+        RUN.answered++;if(!hadWrong)RUN.correctFirst++;
+        fb.className='feedback ok show';fb.innerHTML='<b>¡Impecable, mae!</b> Clasificaste todo bien.';award(25);
+        a.remove();advanceBtn(host);
+      }else{
+        hadWrong=true;
+        wrong.forEach(ix=>{const chip=pool.querySelector('.chipitem[data-ix="'+ix+'"]');if(chip)chip.classList.remove('placed');delete placed[ix];});
+        fb.className='feedback no show';fb.innerHTML=`<b>${ok}/${step.items.length} bien.</b> Las que faltan volvieron abajo. Reacomodalas y revisá de nuevo: no se sigue hasta que TODAS queden bien.`;
+      }
+    });
+    a.appendChild(b);panel.appendChild(a);
+  }
+};
+
+/* order */
+STEP.order=(step,host)=>{
+  stepGlossary(step);
+  const panel=el('div','panel');panel.appendChild(el('div','steplabel','◆ '+(step.title||'Ordená')));panel.appendChild(el('div','prompt',step.prompt));
+  let order=shuffle(step.items.map(i=>i.id));if(order.join()===step.correctOrder.join())order=shuffle(order);
+  const list=el('div','orderlist');panel.appendChild(list);const fb=el('div','feedback');
+  function draw(){
+    list.innerHTML='';
+    order.forEach((id,i)=>{const it=step.items.find(x=>x.id===id);const row=el('div','oitem');row.innerHTML=`<span class="idx">${i+1}</span><span>${it.label}</span><span class="mvs"><button class="mv" ${i===0?'disabled':''} data-up="${i}">▲</button><button class="mv" ${i===order.length-1?'disabled':''} data-dn="${i}">▼</button></span>`;list.appendChild(row);});
+    list.querySelectorAll('[data-up]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.up;[order[i-1],order[i]]=[order[i],order[i-1]];draw();}));
+    list.querySelectorAll('[data-dn]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.dn;[order[i+1],order[i]]=[order[i],order[i+1]];draw();}));
+  }
+  draw();panel.appendChild(fb);host.appendChild(panel);
+  const a=el('div','actions');const chk=el('button','btn primary','Revisar orden ✓');
+  chk.addEventListener('click',()=>{
+    const ok=order.join()===step.correctOrder.join();RUN.answered++;
+    list.querySelectorAll('.oitem').forEach((row,i)=>row.classList.add(order[i]===step.correctOrder[i]?'ok':'bad'));
+    if(ok){RUN.correctFirst++;fb.className='feedback ok show';fb.innerHTML='<b>¡Orden perfecto!</b>'+(step.whyRight||'')+(step.dates?'<br><br>'+step.items.map(it=>`<b>${it.label}:</b> ${step.dates[it.id]}`).join(' · '):'');award(25);chk.disabled=true;if(step.flag)captureFlag(step.flag,host,panel);else advanceBtn(host);}
+    else{fb.className='feedback no show';fb.innerHTML='<b>Casi, mae.</b> Las filas en rojo están fuera de lugar. '+(step.whyRight||'')+'<br><br>Acomodalas e intentá de nuevo.';setTimeout(()=>list.querySelectorAll('.oitem').forEach(r=>r.classList.remove('ok','bad')),1500);}
+  });
+  a.appendChild(chk);panel.appendChild(a);
+};
+
+/* reflect */
+STEP.reflect=(step,host)=>{
+  const panel=el('div','panel');panel.appendChild(el('div','steplabel','◆ '+(step.kind==='sign'?'Juramento':'Reflexión')));panel.appendChild(el('div','prompt',step.prompt));
+  const ta=el('textarea','input');ta.rows=step.kind==='sign'?1:3;ta.placeholder=step.placeholder||'';if(step.kind!=='sign')ta.style.fontFamily='var(--f-body)';if(step.kind==='sign')ta.value=S.alias;
+  panel.appendChild(ta);const fb=el('div','feedback');panel.appendChild(fb);host.appendChild(panel);
+  const a=el('div','actions');const b=el('button','btn primary',step.cta||'Guardar');
+  b.addEventListener('click',()=>{if(ta.value.trim().length<2){toast('Escribí algo primero, mae.');return;}RUN.answered++;RUN.correctFirst++;fb.className='feedback ok show';fb.innerHTML=step.kind==='sign'?`<b>Firmado por ${esc(ta.value.trim())}.</b> Bienvenida oficialmente al CRT. 📜`:'<b>¡Gracias por pensarlo!</b> Esa reflexión es parte del aprendizaje.';award(20);b.disabled=true;ta.disabled=true;advanceBtn(host);});
+  a.appendChild(b);panel.appendChild(a);
+};
+/* ===== CTF ===== */
+function safeBanner(){return `<div class="safebanner"><span class="ic">🛡️</span><div><b>Laboratorio simulado.</b> Nada es real: "Banco Pura Vida" es ficticio, los dominios <span class="mono">.test</span> no existen y nada sale de tu navegador.</div></div>`;}
+function hintWidget(step,host,panel){
+  if(!step.hints||!step.hints.length)return;
+  const bar=el('div','hintbar');let idx=0;const box=el('div');
+  const b=el('button','btn ghost sm','💡 Pedir pista');const info=el('span',null,`<span class="tag">pistas: ${step.hints.length}</span>`);
+  b.addEventListener('click',()=>{if(idx>=step.hints.length){toast('No hay más pistas, mae.');return;}const h=step.hints[idx];box.appendChild(el('div','hintbox',`<span class="pix">Pista ${idx+1}${h.cost?` · −₡${h.cost}`:' · gratis'}</span>${h.text}`));if(h.cost){S.points=Math.max(0,S.points-h.cost);RUN.hintsUsed++;save();refreshHUD();}idx++;if(idx>=step.hints.length)b.disabled=true;});
+  bar.appendChild(b);bar.appendChild(info);panel.appendChild(bar);panel.appendChild(box);
+}
+STEP.inspect=(step,host)=>{
+  const panel=el('div','panel');panel.appendChild(el('div','steplabel','🎣 '+step.title));panel.insertAdjacentHTML('beforeend',safeBanner());panel.appendChild(el('p',null,step.intro));
+  const win=el('div','win');
+  win.innerHTML=`<div class="winbar"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">📧 TicoMail — Bandeja</div></div>
+    <div class="winbody"><div class="mailhead"><span class="lbl">De:</span><span class="val">${step.from.replace(step.fromSuspect,`<span class="suspect" data-note="${esc(step.fromNote)}">${step.fromSuspect}</span>`)}</span><span class="lbl">Asunto:</span><span class="val">${step.subject}</span></div>
+      <div class="mailbody">${step.body}<br><a class="fakebtn" id="fakeLink">${step.linkText}</a><div class="urlpeek" id="urlPeek" hidden>🔗 ${step.linkUrl} <span style="color:var(--muted)">— ${step.linkNote}</span></div></div>
+      <div class="actions" style="justify-content:flex-start"><button class="btn sm" id="peekBtn">🔍 Inspeccionar enlace</button><button class="btn sm" id="hdrBtn">📄 Ver encabezados</button></div>
+      <div class="headers" id="hdrs">${step.headers.replace(step.headerFlag,`<span class="hl">${step.headerFlag}</span>`)}</div></div>`;
+  panel.appendChild(win);
+  panel.appendChild(el('div',null,`<div class="objective" style="margin-top:16px"><b>🚩 Para la bandera</b>${step.flagPrompt}</div>`));
+  const fin=el('input','input mono');fin.placeholder='pegá la dirección aquí…';panel.appendChild(fin);
+  hintWidget(step,host,panel);const fb=el('div','feedback');panel.appendChild(fb);host.appendChild(panel);
+  win.querySelector('#fakeLink').addEventListener('click',e=>{e.preventDefault();win.querySelector('#urlPeek').hidden=false;toast('👀 ¿Viste el dominio? Jamás le des clic a un enlace así en la vida real.');});
+  win.querySelector('#peekBtn').addEventListener('click',()=>{win.querySelector('#urlPeek').hidden=false;});
+  win.querySelector('#hdrBtn').addEventListener('click',()=>win.querySelector('#hdrs').classList.toggle('show'));
+  win.querySelector('.suspect').addEventListener('click',function(){toast('⚠ '+this.dataset.note);});
+  const a=el('div','actions');const b=el('button','btn primary','Enviar bandera 🚩');
+  b.addEventListener('click',()=>{const v=fin.value.trim().toLowerCase();if(step.validate(v)){RUN.answered++;RUN.correctFirst++;a.remove();captureFlag(step.flag,host,panel);}else{fb.className='feedback no show';fb.innerHTML='<b>Mmm, esa no.</b> Revisá los encabezados: el <b>Return-Path</b> es la pista. Pedí una pista si la ocupás.';}});
+  a.appendChild(b);panel.appendChild(a);
+};
+STEP.browser=(step,host)=>{
+  const panel=el('div','panel');panel.appendChild(el('div','steplabel','🎣 '+step.title));panel.insertAdjacentHTML('beforeend',safeBanner());panel.appendChild(el('p',null,step.intro));
+  const win=el('div','win');
+  win.innerHTML=`<div class="winbar"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">🌐 Navegador Yigüirro</div></div>
+    <div class="winbody"><div class="addrbar"><span class="lock">🔒</span><span class="u">${step.url}</span></div>
+      <div class="loginbox"><div class="blogo">🏦 Banco Pura Vida</div><div style="font-size:.78rem;color:var(--muted);margin-bottom:6px">Ingresá para reactivar tu SINPE</div>
+        <input class="input" id="luser" placeholder="Usuario"><input class="input" id="lpass" type="password" placeholder="Contraseña">
+        <button class="btn primary" id="lbtn" style="width:100%;justify-content:center;margin-top:6px">Ingresar</button></div>
+      <div style="text-align:center;margin-top:8px"><div style="font-size:.76rem;color:var(--faint)">Credenciales de utilería (no pongás una real):</div><span class="pill">usuario: ${step.util.user}</span><span class="pill">clave: ${step.util.pass}</span></div></div>`;
+  panel.appendChild(win);const fb=el('div','feedback');panel.appendChild(fb);host.appendChild(panel);
+  const pass=win.querySelector('#lpass');
+  win.querySelector('#lbtn').addEventListener('click',()=>{
+    const p=pass.value;
+    if(p&&p!==step.util.pass){pass.value='';fb.className='feedback no show';fb.innerHTML='<b>¡Upe! Aquí nunca se escribe una clave de verdad.</b> Usá solo la de utilería: <span class="mono">'+step.util.pass+'</span>. (Así de fácil un sitio falso te pide tu clave real.)';return;}
+    fb.className='feedback ok show';fb.innerHTML=`<b>Alto ahí.</b> La página dice <span class="mono">${step.url}</span>, pero el banco real sería <span class="mono">${step.realUrl}</span>. ${step.lockNote}`;
+    win.querySelector('#lbtn').disabled=true;RUN.answered++;RUN.correctFirst++;captureFlag(step.flag,host,panel);
+  });
+};
+STEP.coyote=(step,host)=>{
+  const panel=el('div','panel');panel.appendChild(el('div','steplabel','🎣 '+step.title));panel.insertAdjacentHTML('beforeend',safeBanner());panel.appendChild(el('p',null,step.intro));
+  const split=el('div','split');
+  split.innerHTML=`<div class="coyote"><div class="winbar"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">🐺 panel-coyote (dramatización)</div></div><div class="coylog" id="coylog"></div></div>
+    <div class="win"><div class="winbar"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">📱 Tu teléfono</div></div><div class="winbody" id="phone" style="font-size:.86rem;color:var(--muted)">Esperando…</div></div>`;
+  panel.appendChild(split);const callHost=el('div');panel.appendChild(callHost);host.appendChild(panel);
+  const log=split.querySelector('#coylog');
+  const lines=[{t:'[00:01]',c:'',x:'Víctima abrió el sitio falso…'},{t:'[00:04]',c:'cap',x:'› usuario capturado: vale.mora'},{t:'[00:04]',c:'cap',x:'› clave capturada: ********'},{t:'[00:06]',c:'',x:'Intentando entrar al banco real…'},{t:'[00:07]',c:'',x:'⚠ el banco pide código OTP por SMS'}];
+  let i=0;(function tick(){if(i>=lines.length){phoneStep();return;}const ln=lines[i++];log.appendChild(el('div','ln '+ln.c,`<span class="t">${ln.t}</span> ${ln.x}`));setTimeout(tick,650);})();
+  function phoneStep(){
+    split.querySelector('#phone').innerHTML=`<div style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px"><div style="font-family:var(--f-mono);font-size:.74rem;color:var(--faint)">SMS · Banco Pura Vida</div>Tu código es <b>840213</b>. No lo compartás con nadie.</div>`;
+    const card=el('div','callcard');card.innerHTML=`<div class="ring">📞 llamada entrante · número desconocido</div><p style="margin:8px 0">${step.decisionPrompt}</p>`;
+    const opts=el('div','opts');const fb=el('div','feedback');let solved=false,hadWrong=false;
+    step.options.forEach((o,idx)=>{const b=el('button','opt');b.innerHTML=`<span class="mk">${String.fromCharCode(65+idx)}</span><span>${o.text}</span>`;
+      b.addEventListener('click',()=>{
+        if(solved||b.classList.contains('wrong'))return;
+        if(o.outcome==='good'){solved=true;RUN.answered++;opts.querySelectorAll('.opt').forEach(x=>x.classList.add('disabled'));b.classList.add('correct');if(!hadWrong)RUN.correctFirst++;log.appendChild(el('div','ln ok','<span class="t">[00:12]</span> ✗ sin OTP: acceso DENEGADO. ¡Coyote se quedó afuera!'));fb.className='feedback ok show';fb.innerHTML='<b>¡Así se hace!</b>'+o.feedback;captureFlag(step.flag,host,panel);}
+        else{hadWrong=true;b.classList.add('wrong');b.classList.add('disabled');log.appendChild(el('div','ln cap','<span class="t">[00:12]</span> › en la vida real eso completaría el robo…'));fb.className='feedback no show';fb.innerHTML='<b>Ojo.</b>'+o.feedback+'<br><br>Elegí la otra opción para cortar el ataque: no se sigue hasta hacerlo bien.';}
+      });
+      opts.appendChild(b);});
+    card.appendChild(opts);card.appendChild(fb);callHost.appendChild(card);window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  }
+};
+STEP.viewsource=(step,host)=>{
+  const panel=el('div','panel');panel.appendChild(el('div','steplabel','🎣 '+step.title));panel.insertAdjacentHTML('beforeend',safeBanner());panel.appendChild(el('p',null,step.intro));
+  const secret=b64(step.flag);
+  const src=el('div','srcview');src.innerHTML=`&lt;!doctype html&gt;\n&lt;html lang="es"&gt;\n&lt;head&gt;&lt;title&gt;Banco Pura Vida&lt;/title&gt;&lt;/head&gt;\n&lt;body&gt;\n  &lt;form&gt;  <span class="cmt">&lt;!-- formulario de la página falsa (simulado) --&gt;</span>\n    &lt;input name="user"&gt; &lt;input name="pass"&gt;\n  &lt;/form&gt;\n  <span class="cmt">&lt;!-- nota del kit (base64): <span class="b64" id="b64">${secret}</span> --&gt;</span>\n&lt;/body&gt;&lt;/html&gt;`;
+  panel.appendChild(src);panel.appendChild(el('p','hint','Pista: tocá el texto amarillo para copiarlo al decodificador.'));
+  const dec=el('div','decoder');dec.innerHTML=`<input class="input" id="decIn" placeholder="pegá el texto en Base64…"><button class="btn" id="decBtn">Decodificar 🔓</button>`;panel.appendChild(dec);
+  const out=el('div','hintbox');out.hidden=true;panel.appendChild(out);
+  hintWidget(step,host,panel);const fb=el('div','feedback');panel.appendChild(fb);host.appendChild(panel);
+  src.querySelector('#b64').addEventListener('click',()=>{dec.querySelector('#decIn').value=secret;toast('Copiado al decodificador 👇');});
+  dec.querySelector('#decBtn').addEventListener('click',()=>{const v=dec.querySelector('#decIn').value;const r=unb64(v);out.hidden=false;
+    if(r&&r===step.flag){out.innerHTML='<span class="pix">Decodificado</span>'+r;RUN.answered++;RUN.correctFirst++;dec.querySelector('#decBtn').disabled=true;captureFlag(step.flag,host,panel);}
+    else if(r){out.innerHTML='<span class="pix">Decodificado</span>'+esc(r)+'<br><span style="color:var(--faint)">…pero eso no parece la bandera. ¿Copiaste el texto correcto?</span>';}
+    else{out.innerHTML='<span style="color:var(--crit)">Eso no es Base64 válido. Copiá el texto amarillo del código fuente.</span>';}});
+};
+STEP.phishornot=(step,host)=>{
+  const panel=el('div','panel');panel.appendChild(el('div','steplabel','🎣 '+step.title));panel.appendChild(el('p',null,step.intro));
+  const host2=el('div');panel.appendChild(host2);const fb=el('div','feedback');panel.appendChild(fb);host.appendChild(panel);
+  let i=0,correct=0;
+  (function render(){
+    host2.innerHTML='';
+    if(i>=step.cases.length){RUN.answered++;if(correct===step.cases.length){RUN.correctFirst++;fb.className='feedback ok show';fb.innerHTML='<b>¡Ojo de cazador! '+correct+'/'+step.cases.length+'</b>';}else{fb.className='feedback ok show';fb.innerHTML='<b>'+correct+'/'+step.cases.length+' bien.</b> Igual capturás la bandera; repasá: lo difícil es cuando la historia es muy creíble.';}captureFlag(step.flag,host,panel);return;}
+    const cs=step.cases[i];const card=el('div','phishcard');card.innerHTML=`<div class="meta">${cs.meta}</div><div>${cs.text}</div>`;
+    const opts=el('div','opts');opts.style.marginTop='12px';const fbc=el('div','feedback');let hadWrong=false,done=false;
+    [['🎣 Phishing',true],['✅ Legítimo',false]].forEach(([lbl,val])=>{const b=el('button','opt');b.innerHTML=`<span class="mk">${val?'🎣':'✅'}</span><span>${lbl}</span>`;
+      b.addEventListener('click',()=>{
+        if(done||b.classList.contains('wrong'))return;const right=val===cs.phish;
+        if(right){done=true;if(!hadWrong)correct++;opts.querySelectorAll('.opt').forEach(x=>x.classList.add('disabled'));b.classList.add('correct');fbc.className='feedback ok show';fbc.innerHTML='<b>¡Correcto!</b>'+cs.why;const a=el('div','actions');const nb=el('button','btn primary',i<step.cases.length-1?'Siguiente ▸':'Terminar ▸');nb.addEventListener('click',()=>{i++;render();});a.appendChild(nb);card.appendChild(a);}
+        else{hadWrong=true;b.classList.add('wrong');b.classList.add('disabled');fbc.className='feedback no show';fbc.innerHTML='<b>Casi…</b> Fijate otra vez en el dominio, la urgencia y si pide datos. Elegí de nuevo: no se sigue hasta acertar.';}
+      });
+      opts.appendChild(b);});
+    card.appendChild(opts);card.appendChild(fbc);host2.appendChild(card);
+  })();
+};
+function captureFlag(flag,host,panel){
+  if(!RUN.flags.includes(flag)){RUN.flags.push(flag);award(50);}
+  const won=el('div','flagwon');won.innerHTML=`<div style="font-size:2.3rem">🚩</div><div class="big">¡BANDERA CAPTURADA!</div><div class="flagcode">${flag}</div><div class="hint">+50 ₡ rep · banderas: ${RUN.flags.length}</div>`;
+  (panel||host).appendChild(won);advanceBtn(host,'Seguir el rastro');window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+
+/* ===== FIN DE MISIÓN ===== */
+function finishMission(){
+  const step=RUN.mission.steps[RUN.stepIdx];const m=RUN.mission;const total=countChallenges(m);
+  const perfect=RUN.hintsUsed===0&&RUN.correctFirst>=total;
+  S.missions[m.id]={done:true,points:(step.points||0)+RUN.flags.length*50,flags:RUN.flags.slice(),score:total?Math.round(RUN.correctFirst/total*100):100,hints:RUN.hintsUsed,noHints:perfect};
+  award(step.points||0);grantBadge(step.badge);
+  if(m.id==='m11')grantBadge('tico');
+  if(perfect&&total>=3)grantBadge('perfect');
+  if(allDone())grantBadge('graduado');
+  save();
+  const host=$('#stepHost');host.innerHTML='';$('#stepsNav').querySelectorAll('.sdot').forEach(d=>d.className='sdot done');
+  const panel=el('div','panel complete');const nextM=MISSIONS[missionIndex(m.id)+1];
+  panel.innerHTML=`<div class="burst">${pick(['🎉','🥳','🎊','✨'])}</div><h3>${step.title}</h3>
+    <p style="color:var(--muted);max-width:50ch;margin:0 auto">${step.msg}</p>
+    ${step.caveat?`<div class="hintbox" style="max-width:52ch;margin:14px auto 0;text-align:left"><span class="pix">Nota de rigor</span>${step.caveat}</div>`:''}
+    <div class="rewards"><div class="reward"><div class="n">+${step.points||0}</div><div class="l">₡ rep base</div></div>${RUN.flags.length?`<div class="reward"><div class="n">${RUN.flags.length}🚩</div><div class="l">banderas</div></div>`:''}<div class="reward"><div class="n">${S.missions[m.id].score}%</div><div class="l">acierto</div></div><div class="reward"><div class="n">${BADGES[step.badge].ic}</div><div class="l">${BADGES[step.badge].nm}</div></div></div>`;
+  const a=el('div','actions');a.style.justifyContent='center';
+  if(allDone()){const cb=el('button','btn primary','🎓 Ver mi certificado');cb.addEventListener('click',()=>{show('cert');renderCert();});a.appendChild(cb);}
+  else if(nextM){const nb=el('button','btn primary','Siguiente: '+nextM.title+' ▸');nb.addEventListener('click',()=>openMission(nextM.id));a.appendChild(nb);}
+  const mb=el('button','btn ghost','Volver al mapa');mb.addEventListener('click',()=>{show('map');renderMap();});a.appendChild(mb);
+  panel.appendChild(a);host.appendChild(panel);refreshHUD();
+}
+
+/* ===== GLOSARIO / SIGLAS ===== */
+let glosTab='glos';
+function renderGlossary(filter=''){
+  const list=$('#glosList');list.innerHTML='';const f=filter.trim().toLowerCase();
+  if(glosTab==='glos'){
+    GLOSSARY.filter(g=>!f||g.t.toLowerCase().includes(f)||g.d.toLowerCase().includes(f)).forEach(g=>{
+      const has=S.glossary.includes(g.t);const e=el('div','gentry');
+      e.innerHTML=`<div class="term">${g.t} <span class="lk">${has?'✓ descubierta':'por descubrir'}</span></div><div class="def">${g.d}</div>`;list.appendChild(e);});
+  }else{
+    Object.keys(ACR).filter(a=>!f||a.toLowerCase().includes(f)||ACR[a].toLowerCase().includes(f)).forEach(a=>{
+      const e=el('div','gentry');e.innerHTML=`<div class="term">${a}</div><div class="def">${ACR[a]}</div>`;list.appendChild(e);});
+  }
+}
+/* ===== INSIGNIAS ===== */
+function renderBadges(){const grid=$('#badgeGrid');grid.innerHTML='';const keys=Object.keys(BADGES);$('#badgeCount').textContent=`Tenés ${S.badges.length} de ${keys.length} insignias.`;keys.forEach(k=>{const has=S.badges.includes(k);const c=el('div','bchip'+(has?' have':''));c.innerHTML=`<div class="ic">${BADGES[k].ic}</div><div class="nm">${BADGES[k].nm}</div>`;grid.appendChild(c);});}
+/* ===== PERSONAJES ===== */
+function renderChars(){const l=$('#charList');l.innerHTML='';Object.keys(CHARS).forEach(k=>{const c=CHARS[k];if(!c.name||!c.bio)return;const r=el('div','charrow');r.innerHTML=`<div class="av">${c.ic}</div><div><div class="nm">${c.name}</div><div class="rl">${c.role}</div><div style="font-size:.86rem;color:var(--muted);margin-top:3px">${c.bio}</div></div>`;l.appendChild(r);});}
+/* ===== DOCENTE ===== */
+function missionCode(){const flags=[];MISSIONS.forEach(m=>{const st=S.missions[m.id];if(st&&st.flags)flags.push(...st.flags);});const base=(S.alias||'anon')+'|'+doneCount()+'|'+S.points+'|'+flags.length;let h=0;for(let i=0;i<base.length;i++)h=(h*31+base.charCodeAt(i))>>>0;return (S.alias||'ALUMNO').toUpperCase().replace(/\s/g,'').slice(0,8)+'-'+doneCount()+'M-'+S.points+'R-'+h.toString(36).toUpperCase().slice(0,5);}
+function renderTeacher(){
+  const body=$('#teachBody');
+  const rows=MISSIONS.map(m=>{const flags=m.steps.filter(s=>s.flag).map(s=>s.flag);return `<tr><td><b>${m.num}</b> ${m.title}</td><td class="fl">${flags.length?flags.map(esc).join('<br>'):'—'}</td></tr>`;}).join('');
+  body.innerHTML=`<div class="warn">⚠ <b>Solo para el docente.</b> Banderas y guía de evaluación. En clase, recordá que todo el laboratorio es simulado y que atacar sistemas reales es delito (Ley 9048).</div>
+    <details class="tsec" open><summary>🚩 Banderas por misión</summary><div class="tin"><table class="ttable"><thead><tr><th>Misión</th><th>Bandera(s)</th></tr></thead><tbody>${rows}</tbody></table></div></details>
+    <details class="tsec"><summary>📋 Código de misión del estudiante</summary><div class="tin"><p class="hint">El estudiante te lo muestra al terminar. Combina alias, misiones, puntaje y banderas.</p><div class="flagcode" style="color:var(--accent);border-color:var(--accent)">${missionCode()}</div></div></details>
+    <details class="tsec"><summary>🎯 Rúbrica sugerida</summary><div class="tin"><table class="ttable"><tbody><tr><td>Diagnóstico + "phish o no" final</td><td>10%</td></tr><tr><td>Banderas del CTF (6)</td><td>40%</td></tr><tr><td>Cuestionarios de contenido</td><td>20%</td></tr><tr><td>Reflexión ("explicale a tu abuela la estafa SINPE")</td><td>30%</td></tr></tbody></table></div></details>
+    <details class="tsec"><summary>🚀 Subirlo gratis (resumen)</summary><div class="tin"><p>GitHub Pages: subí el archivo como <span class="mono">index.html</span>, repo público, Settings → Pages → rama main. Compartí el enlace en Classroom/Teams con un Formulario de Google para las banderas. En Moodle: SCORM 1.2 (no 2004).</p></div></details>
+    <div class="actions" style="justify-content:space-between"><button class="btn ghost" id="resetGame">🗑 Reiniciar partida</button><span class="hint">Autor: César Jiménez Segura · 2026</span></div>`;
+  $('#resetGame').addEventListener('click',function(){if(this.dataset.c){resetAll();location.reload();}else{this.dataset.c='1';this.textContent='¿Seguro? Tocá otra vez para borrar todo';}});
+}
+/* ===== CERTIFICADO ===== */
+function renderCert(){
+  const hostC=$('#certHost');
+  if(!allDone()){hostC.innerHTML=`<div class="panel locknote"><div class="big">🔒</div><h3>Certificado bloqueado</h3><p style="color:var(--muted);max-width:44ch;margin:8px auto 0">Completá las ${MISSIONS.length} misiones para desbloquearlo. Llevás <b>${doneCount()}</b>. ¡Dale, mae, que ya casi!</p></div>`;return;}
+  const when=new Date().toLocaleDateString('es-CR',{year:'numeric',month:'long',day:'numeric'});
+  hostC.innerHTML=`<div class="cert"><div class="seal">🎓🇨🇷</div><div class="ttl">Centro de Respuesta Tico · Operación Pura Vida</div><p style="color:var(--muted);margin:4px 0 10px">certifica que</p><div class="nm">${esc(S.alias||'Agente')}</div><p style="margin:12px auto 0;max-width:46ch;color:var(--muted)">completó las ${MISSIONS.length} misiones del programa de concientización en ciberseguridad y capturó las banderas del laboratorio <b>Banco Pura Vida</b>, con <b>₡${S.points}</b> de reputación.</p><div class="dt">📅 ${when} · 🎖️ ${S.badges.length} insignias</div><div class="sig">Firma del programa · <b>César Jiménez Segura</b><br><span class="mono" style="font-size:.7rem">Código: ${missionCode()}</span></div></div><p class="hint" style="text-align:center;margin-top:14px">Podés tomarle una captura para guardarlo o enviárselo a tu profe.</p>`;
+}
+
+/* ===== OVERLAYS ===== */
+function openOverlay(id){$('#'+id).classList.add('open');}
+function closeOverlays(){document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open'));}
+document.querySelectorAll('.overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)closeOverlays();});o.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeOverlays));});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOverlays();});
+$('#glosBtn').addEventListener('click',()=>{renderGlossary();openOverlay('ovGlos');});
+$('#glosSearch').addEventListener('input',e=>renderGlossary(e.target.value));
+$('#tabGlos').addEventListener('click',()=>{glosTab='glos';$('#tabGlos').classList.add('on');$('#tabAcro').classList.remove('on');$('#glosSearch').value='';renderGlossary();});
+$('#tabAcro').addEventListener('click',()=>{glosTab='acro';$('#tabAcro').classList.add('on');$('#tabGlos').classList.remove('on');$('#glosSearch').value='';renderGlossary();});
+$('#badgeBtn').addEventListener('click',()=>{renderBadges();openOverlay('ovBadge');});
+$('#charBtn').addEventListener('click',()=>{renderChars();openOverlay('ovChar');});
+$('#teachBtn').addEventListener('click',()=>{renderTeacher();openOverlay('ovTeach');});
+
+/* ===== ARRANQUE ===== */
+$('#homeBtn').addEventListener('click',()=>{if(S.started){show('map');renderMap();}else show('start');});
+$('#certBack').addEventListener('click',()=>{show('map');renderMap();});
+$('#goCert').addEventListener('click',()=>{show('cert');renderCert();});
+function startGame(){const a=$('#aliasIn').value.trim();if(a.length<2){toast('Escribí un alias, mae (2+ letras).');$('#aliasIn').focus();return;}S.alias=a;S.started=true;save();refreshHUD();show('map');renderMap();}
+$('#startBtn').addEventListener('click',startGame);
+$('#aliasIn').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+(function init(){refreshHUD();if(S.started){$('#aliasIn').value=S.alias||'';$('#startBtn').textContent='Reanudar como '+(S.alias||'agente')+' ▸';}})();
+/*__REST__*/
+</script>
+
+</body></html>
